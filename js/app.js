@@ -382,7 +382,7 @@ const i18n = {
         snapchatUrl: 'سنەپچات',
         facebookUrl: 'فەيسبۆک',
         cafeFacebook: 'فەيسبۆک',
-        cafeInfoTitle: 'مطعـم یاسمین الشام',
+        cafeInfoTitle: 'مطعم ياسمين الشام',
         linkCopied: 'بەستەر کۆپی کرا!',
         installTitle: 'زیادکردن بۆ سکرینی سەرەکی',
         installSubtitle: 'زیادکردنی مینیۆ کەمان بوو ناو سکرین وەکو ئەپلیکەیشن',
@@ -609,7 +609,7 @@ const i18n = {
         tiktokUrl: 'تيك توك',
         snapchatUrl: 'سناب شات',
         facebookUrl: 'فيسبوك',
-        cafeInfoTitle: 'مطعـم یاسمین الشام',
+        cafeInfoTitle: 'مطعم ياسمين الشام',
         linkCopied: 'تم نسخ الرابط!',
         installTitle: 'إضافة إلى الشاشة الرئيسية',
         installSubtitle: 'أضف قائمتنا إلى الشاشة الرئيسية كتطبيق',
@@ -2918,7 +2918,7 @@ function setupMenuThemePicker() {
 }
 
 var HERO_TYPE_PHRASES = [
-    { text: ' مطعـم یاسمین الشام', dir: 'rtl' },
+    { text: 'مطعم ياسمين الشام', dir: 'rtl' },
     { text: 'YASAMIN AL-SHAM', dir: 'ltr' }
 ];
 
@@ -2956,6 +2956,19 @@ function initHeroTitleSequence() {
         var phrase = HERO_TYPE_PHRASES[phraseIndex];
         typewriter.setAttribute('dir', phrase.dir);
         typedEl.setAttribute('dir', phrase.dir);
+        if (phrase.dir === 'rtl') {
+            typedEl.setAttribute('lang', 'ar');
+            typewriter.style.fontFamily = '';
+            typedEl.style.fontFamily = '';
+            typewriter.style.letterSpacing = '';
+            typedEl.style.letterSpacing = '';
+        } else {
+            typedEl.removeAttribute('lang');
+            typewriter.style.fontFamily = '';
+            typedEl.style.fontFamily = '';
+            typewriter.style.letterSpacing = '';
+            typedEl.style.letterSpacing = '';
+        }
     }
 
     function tick() {

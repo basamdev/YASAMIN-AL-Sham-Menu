@@ -35,11 +35,12 @@
 }
 
 .logo-splash-text {
-    font-family: var(--font-body);
+    font-family: var(--font-arabic);
     font-size: 1.4rem;
     font-weight: 700;
     color: var(--color-gold);
-    letter-spacing: 0.04em;
+    letter-spacing: 0;
+    direction: rtl;
 }
 
 .logo-splash-dots {
@@ -710,12 +711,12 @@ body.light-mode .hero .logo {
 }
 
 .cafe-name {
-    font-family: inherit;
+    font-family: var(--font-arabic);
     font-size: clamp(2.4rem, 8vw, 4rem);
     font-weight: 700;
-    line-height: 1.02;
+    line-height: 1.2;
     color: #F7D87D;
-    letter-spacing: 0.02em;
+    letter-spacing: 0;
     text-shadow: 0 2px 24px rgba(0, 0, 0, 0.22);
     word-break: keep-all;
 }
@@ -727,7 +728,7 @@ body.light-mode .hero .logo {
     font-family: inherit;
     font-size: inherit;
     font-weight: 700;
-    letter-spacing: 0.01em;
+    letter-spacing: 0;
     white-space: normal;
     color: inherit;
     max-width: min(90vw, 28rem);
@@ -735,9 +736,15 @@ body.light-mode .hero .logo {
     overflow-wrap: break-word;
 }
 
+.cafe-name .menu-hero-typewriter[dir="ltr"] {
+    font-family: var(--font-display);
+    letter-spacing: 0.04em;
+}
+
 .cafe-name .menu-hero-typed {
     display: inline-block;
     white-space: nowrap;
+    letter-spacing: inherit;
     text-shadow: 0 1px 14px rgba(0, 0, 0, 0.32);
 }
 
@@ -5095,16 +5102,24 @@ body.emenu-layout .menu-hero-typewriter {
     display: inline-block;
     min-width: 6.8rem;
     text-align: right;
-    font-family: var(--font-display);
+    font-family: var(--font-arabic);
     font-size: clamp(0.9rem, 3.6vw, 1.1rem);
     font-weight: 600;
-    letter-spacing: 0.03em;
+    letter-spacing: 0;
     white-space: nowrap;
     color: #ffffff;
 }
 
+body.emenu-layout .menu-hero-typewriter[dir="ltr"] {
+    font-family: var(--font-display);
+    letter-spacing: 0.03em;
+    text-align: left;
+}
+
 body.emenu-layout .menu-hero-typed {
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.42);
+    letter-spacing: inherit;
+    font-family: inherit;
 }
 
 body.emenu-layout .menu-hero-cursor {

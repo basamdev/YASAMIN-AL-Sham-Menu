@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>مطعـم یاسمین الشام</title>
+    <title>مطعم ياسمين الشام</title>
     <link rel="manifest" href="manifest.json?v=117">
     <link rel="icon" type="image/png" href="assets/yassamin-alsham-logo.png?v=8">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/yassamin-alsham-logo.png?v=8">
@@ -18,7 +18,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Tajawal:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=133">
+    <link rel="stylesheet" href="css/style.css?v=136">
     <style>
         :lang(en) {
             font-family: var(--font-body);
@@ -100,37 +100,49 @@
             }
         }
 
-        /* Arabic title under brand mark */
+        /* Arabic title — Cairo/Tajawal, no letter-spacing (keeps letters connected) */
         body.index-page .cafe-name,
         body.index-page.light-mode .cafe-name {
-            font-family: inherit;
-            letter-spacing: 0.05em;
+            font-family: "Cairo", "Tajawal", var(--font-arabic), sans-serif !important;
+            letter-spacing: 0 !important;
             font-size: clamp(1.35rem, 4.8vw, 2rem);
             font-weight: 700;
-            line-height: 1.15;
+            line-height: 1.35;
             text-transform: none;
             color: #FFFFFF !important;
             text-shadow: 0 2px 16px rgba(0,0,0,0.55);
             margin-top: 0.35rem;
         }
-        body.index-page #heroTitleTyped,
-        body.index-page .cafe-name .menu-hero-typed {
+        body.index-page .cafe-name .menu-hero-typewriter,
+        body.index-page .cafe-name .menu-hero-typed,
+        body.index-page #heroTitleTyped {
+            font-family: inherit !important;
+            letter-spacing: 0 !important;
             color: #FFFFFF !important;
             font-size: inherit;
             text-shadow: 0 2px 16px rgba(0,0,0,0.55);
+            white-space: normal;
+        }
+        body.index-page .cafe-name .menu-hero-typewriter[dir="ltr"],
+        body.index-page .cafe-name .menu-hero-typed[dir="ltr"] {
+            font-family: "Playfair Display", "Cinzel", serif !important;
+            letter-spacing: 0.04em !important;
         }
         body.index-page .cafe-name .menu-hero-cursor {
             background: #FFFFFF !important;
             box-shadow: 0 0 8px rgba(255,255,255,0.45);
         }
 
-        /* Splash: title white, dots red */
+        /* Splash Arabic title */
         body.index-page .logo-splash-text {
-            font-family: inherit;
-            letter-spacing: 0.02em;
-            font-size: 1.1rem;
+            font-family: "Cairo", "Tajawal", var(--font-arabic), sans-serif !important;
+            letter-spacing: 0 !important;
+            font-size: 1.15rem;
+            font-weight: 700;
             color: #FFFFFF !important;
             text-shadow: 0 2px 12px rgba(0,0,0,0.45);
+            direction: rtl;
+            unicode-bidi: plaintext;
         }
         body.index-page .logo-splash-dots span {
             background: #C21807 !important;
@@ -145,7 +157,7 @@
 
     <div class="logo-splash" id="logoSplash">
         <img src="assets/yassamin-logo-full.png?v=9" alt="YASAMIN AL-SHAM" onerror="this.onerror=null; this.src='assets/yassamin-alsham-logo.png?v=8';">
-        <span class="logo-splash-text">مطعـم یاسمین الشام</span>
+        <span class="logo-splash-text" dir="rtl" lang="ar">مطعم ياسمين الشام</span>
         <div class="logo-splash-dots"><span></span><span></span><span></span></div>
     </div>
 
@@ -162,7 +174,7 @@
                </div>
                <h1 class="cafe-name">
                  <span class="menu-hero-typewriter" id="heroTypewriter" aria-live="polite">
-                     <span class="menu-hero-typed" id="heroTitleTyped" dir="rtl">مطعـم یاسمین الشام</span><span class="menu-hero-cursor" id="heroTitleCursor" aria-hidden="true"></span>
+                     <span class="menu-hero-typed" id="heroTitleTyped" dir="rtl" lang="ar">مطعم ياسمين الشام</span><span class="menu-hero-cursor" id="heroTitleCursor" aria-hidden="true"></span>
                  </span>
                </h1>
 
@@ -185,7 +197,7 @@
         </div>
     </section>
 
-    <script src="js/app.js?v=118"></script>
+    <script src="js/app.js?v=129"></script>
     <script>
         (function () {
             document.body.classList.remove('light-mode');
