@@ -174,7 +174,7 @@ const i18n = {
         menuLoadRetry: 'دووبارە هەوڵبدەرەوە',
         menuConnectionHint: 'پەیوەندی ئینتەرنێت یان ڕێکخستنی Firebase بپشکنە.',
         noCategories: 'هیچ بەشێک نییە.',
-        pageTitle: 'Shawarma | مێنوو',
+        pageTitle: 'YASAMIN AL-SHAM | مێنوو',
         dashboard: 'داشبۆرد',
         manageItems: 'بەڕێوەبردنی ئایتمەکان',
         manageCategories: 'بەڕێوەبردنی بەشەکان',
@@ -182,6 +182,7 @@ const i18n = {
         cashier: 'کاشێر',
         settings: 'ڕێکخستنەکان',
         logout: 'دەرچوون',
+        viewMenu: 'بینینی مێنوو',
         admin: 'بەڕێوەبەر',
         ku: 'کوردی',
         ar: 'عەرەبی',
@@ -292,7 +293,7 @@ const i18n = {
         sold: 'دانە',
         itemsCount: ' ئایتم',
         unknown: 'نەناسراو',
-        siteName: 'Shawarma',
+        siteName: 'YASAMIN AL-SHAM',
         addCategory: '+ زیادکردنی بەشی نوێ',
         categoryNameKu: 'ناوی بەش بە کوردی',
         categoryNameAr: 'ناوی بەش بە عەرەبی',
@@ -345,6 +346,10 @@ const i18n = {
         addToCart: '+ زیادکردن بۆ سەبەتە',
         remove: 'لابردن',
         cartEmpty: 'سەبەتە بەتاڵە',
+        favorites: 'دڵخوازەکان',
+        favoritesEmpty: 'هیچ دڵخوازێک نییە',
+        addToFavorites: 'زیادکردن بۆ دڵخوازەکان',
+        removeFromFavorites: 'لابردن لە دڵخوازەکان',
         cartTotal: 'کۆی گشتی',
         sendWhatsApp: 'ناردن بە واتساپ',
         useCurrentLocation: '📍ناردن لینکی لۆکەیشن',
@@ -357,6 +362,7 @@ const i18n = {
         themeCream: 'کرێم',
         themeCoffee: 'قاوە',
         themeGold: 'زێڕین',
+        themeRed: 'سور',
         themeMocha: 'موکا',
         themeDark: 'تاریک',
         cafeOpen: 'ئێستا کراوەیە',
@@ -376,7 +382,7 @@ const i18n = {
         snapchatUrl: 'سنەپچات',
         facebookUrl: 'فەيسبۆک',
         cafeFacebook: 'فەيسبۆک',
-        cafeInfoTitle: 'Shawarma',
+        cafeInfoTitle: 'مطعـم یاسمین الشام',
         linkCopied: 'بەستەر کۆپی کرا!',
         installTitle: 'زیادکردن بۆ سکرینی سەرەکی',
         installSubtitle: 'زیادکردنی مینیۆ کەمان بوو ناو سکرین وەکو ئەپلیکەیشن',
@@ -396,7 +402,7 @@ const i18n = {
         menuLoadRetry: 'إعادة المحاولة',
         menuConnectionHint: 'تحقق من الإنترنت أو إعدادات Firebase.',
         noCategories: 'لا توجد أقسام.',
-        pageTitle: 'Shawarma | القائمة',
+        pageTitle: 'YASAMIN AL-SHAM | القائمة',
         dashboard: 'لوحة التحكم',
         manageItems: 'إدارة العناصر',
         manageCategories: 'إدارة الفئات',
@@ -404,6 +410,7 @@ const i18n = {
         cashier: 'الصندوق',
         settings: 'الإعدادات',
         logout: 'تسجيل الخروج',
+        viewMenu: 'عرض القائمة',
         admin: 'المشرف',
         ku: 'كوردي',
         ar: 'عربي',
@@ -514,7 +521,7 @@ const i18n = {
         sold: 'قطعة',
         itemsCount: ' عناصر',
         unknown: 'غير معروف',
-        siteName: 'Shawarma',
+        siteName: 'YASAMIN AL-SHAM',
         addCategory: '+ إضافة فئة جديدة',
         categoryNameKu: 'اسم الفئة بالكردية',
         categoryNameAr: 'اسم الفئة بالعربية',
@@ -567,6 +574,10 @@ const i18n = {
         addToCart: '+ إضافة للسلة',
         remove: 'إزالة',
         cartEmpty: 'السلة فارغة',
+        favorites: 'المفضلة',
+        favoritesEmpty: 'لا توجد مفضلات',
+        addToFavorites: 'إضافة إلى المفضلة',
+        removeFromFavorites: 'إزالة من المفضلة',
         cartTotal: 'الإجمالي',
         sendWhatsApp: 'إرسال واتساب',
         useCurrentLocation: '📍 إرسال رابط الموقع',
@@ -579,6 +590,7 @@ const i18n = {
         themeCream: 'كريمي',
         themeCoffee: 'قهوة',
         themeGold: 'ذهبي',
+        themeRed: 'أحمر',
         themeMocha: 'موكا',
         themeDark: 'داكن',
         cafeOpen: 'مفتوح الآن',
@@ -597,7 +609,7 @@ const i18n = {
         tiktokUrl: 'تيك توك',
         snapchatUrl: 'سناب شات',
         facebookUrl: 'فيسبوك',
-        cafeInfoTitle: 'Shawarma',
+        cafeInfoTitle: 'مطعـم یاسمین الشام',
         linkCopied: 'تم نسخ الرابط!',
         installTitle: 'إضافة إلى الشاشة الرئيسية',
         installSubtitle: 'أضف قائمتنا إلى الشاشة الرئيسية كتطبيق',
@@ -607,7 +619,7 @@ const i18n = {
         installDontShow: 'لا تظهر مرة أخرى',
         installShowHelp: 'إضافة للشاشة الرئيسية',
         installNow: 'تثبيت الآن',
-        androidStep4: 'اضغط «Install» — يُثبت تطبيق Shawarma',
+        androidStep4: 'اضغط «Install» — يُثبت تطبيق YASAMIN AL-SHAM',
     },
     en: {
         menuTitle: 'Our Menu',
@@ -618,7 +630,7 @@ const i18n = {
         menuLoadRetry: 'Try again',
         menuConnectionHint: 'Check internet or Firebase settings for this domain.',
         noCategories: 'No categories.',
-        pageTitle: 'Shawarma | Menu',
+        pageTitle: 'YASAMIN AL-SHAM | Menu',
         dashboard: 'Dashboard',
         manageItems: 'Manage Items',
         manageCategories: 'Manage Categories',
@@ -626,6 +638,7 @@ const i18n = {
         cashier: 'Cashier',
         settings: 'Settings',
         logout: 'Logout',
+        viewMenu: 'View Menu',
         admin: 'Admin',
         ku: 'Kurdish',
         ar: 'Arabic',
@@ -733,8 +746,9 @@ const i18n = {
         searchPlaceholder: 'Search menu...',
         noSearchResults: 'No items found for',
         favorites: 'Favorites',
+        favoritesEmpty: 'No favorites yet',
         addToFavorites: 'Add to favorites',
-        removeFromFavorites: 'Removed from favorites',
+        removeFromFavorites: 'Remove from favorites',
         rated: 'Rated',
         stars: 'stars',
         itemAddedToCart: 'Added to cart',
@@ -756,7 +770,7 @@ const i18n = {
         sold: 'sold',
         itemsCount: ' items',
         unknown: 'unknown',
-        siteName: 'Shawarma',
+        siteName: 'YASAMIN AL-SHAM',
         addCategory: '+ Add New Category',
         categoryNameKu: 'Category Name (Kurdish)',
         categoryNameAr: 'Category Name (Arabic)',
@@ -822,6 +836,7 @@ const i18n = {
         themeCream: 'Cream',
         themeCoffee: 'Coffee',
         themeGold: 'Gold',
+        themeRed: 'Red',
         themeMocha: 'Mocha',
         themeDark: 'Dark',
         cafeOpen: 'Open now',
@@ -840,7 +855,7 @@ const i18n = {
         tiktokUrl: 'TikTok',
         snapchatUrl: 'Snapchat',
         facebookUrl: 'Facebook',
-        cafeInfoTitle: 'Shawarma',
+        cafeInfoTitle: 'YASAMIN AL-SHAM',
         linkCopied: 'Link copied!',
         installTitle: 'Add to Home Screen',
         installSubtitle: 'Add our menu to your home screen like an app',
@@ -853,11 +868,11 @@ const i18n = {
         installImagesMissing: 'Add tutorial images to images/install/',
         iosStep1: 'Tap Share (↗) at the bottom of Safari',
         iosStep2: 'Choose «Add to Home Screen»',
-        iosStep3: 'Tap «Add» — Shawarma icon appears on your home screen',
+        iosStep3: 'Tap «Add» — YASAMIN AL-SHAM icon appears on your home screen',
         androidStep1: 'Tap Menu (⋮) at the top of Chrome',
         androidStep2: 'Choose «Add to Home screen»',
         androidStep3: 'Choose «Install»',
-        androidStep4: 'Tap «Install» — Shawarma is added to your phone',
+        androidStep4: 'Tap «Install» — YASAMIN AL-SHAM is added to your phone',
     }
 };
 
@@ -991,7 +1006,7 @@ function showFirestoreApiDisabledAlert() {
     window._firestoreApiDisabledAlerted = true;
     var lang = localStorage.getItem('selectedLang') || 'ku';
     var strings = i18n[lang] || i18n.en;
-    var projectId = (window.firebaseConfig && window.firebaseConfig.projectId) || 'shawarma-demashq-menu';
+    var projectId = (window.firebaseConfig && window.firebaseConfig.projectId) || 'yassaminresturant';
     var url = 'https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=' + encodeURIComponent(projectId);
     alert('⚠️ ' + (strings.errorPrefix || 'Error:') + '\n\nCloud Firestore API is disabled for this project.\n\nPlease enable it here:\n' + url + '\n\nAfter enabling, wait a few minutes and refresh this page.');
 }
@@ -1151,10 +1166,18 @@ async function loadCategoriesFromFirebase() {
     if (!window.db) return false;
     if (window._firestoreApiDisabled) return false;
     try {
-        const catSnap = await firestoreGetWithTimeout(window.db.collection('categories').orderBy('order', 'asc'), 8000);
+        const catSnap = await firestoreGetWithTimeout(window.db.collection('categories'), 8000);
         const categories = [];
         catSnap.forEach(doc => {
             categories.push({ id: doc.id, data: doc.data() });
+        });
+        categories.sort(function (a, b) {
+            var ao = a.data && a.data.order != null ? Number(a.data.order) : NaN;
+            var bo = b.data && b.data.order != null ? Number(b.data.order) : NaN;
+            if (!isNaN(ao) && !isNaN(bo) && ao !== bo) return ao - bo;
+            if (!isNaN(ao) && isNaN(bo)) return -1;
+            if (isNaN(ao) && !isNaN(bo)) return 1;
+            return String(a.id || '').localeCompare(String(b.id || ''));
         });
         const sig = categories.map(function (c) { return c.id; }).join('|');
         const prev = localStorage.getItem('cachedCategoriesSig') || '';
@@ -1666,11 +1689,11 @@ function autoSelectCategoryAfterRender(forceFirst) {
     if (target) {
         var exists = scroll.querySelector('.category-btn[data-category="' + target + '"]');
         if (exists) {
-            switchCategory(target, { immediate: true });
+            switchCategory(target, { immediate: true, silent: true });
             scrollCategoryBarToActive();
         } else if (scroll.querySelector('.category-btn')) {
             var firstBtn = scroll.querySelector('.category-btn');
-            switchCategory(firstBtn.getAttribute('data-category'), { immediate: true });
+            switchCategory(firstBtn.getAttribute('data-category'), { immediate: true, silent: true });
             scrollCategoryBarToActive();
         }
     }
@@ -1710,8 +1733,82 @@ function clearCategorySelection() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function getCategoryBarHeight() {
+    var bar = document.getElementById('categoryBar');
+    return bar ? Math.ceil(bar.getBoundingClientRect().height) : 72;
+}
+
+function setCategoryPillActive(category) {
+    document.querySelectorAll('.category-btn').forEach(function (btn) {
+        btn.classList.toggle('active', btn.getAttribute('data-category') === category);
+    });
+    var activeTitle = document.getElementById('activeCategoryTitle');
+    if (activeTitle) {
+        activeTitle.textContent = getCategoryDisplayName(category);
+    }
+    scrollCategoryBarToActive();
+}
+
+function scrollToCategorySection(category, behavior) {
+    behavior = behavior || 'smooth';
+    window._categoryClickScrolling = true;
+    if (window._categoryClickScrollTimer) clearTimeout(window._categoryClickScrollTimer);
+
+    var barH = getCategoryBarHeight() + 8;
+    var y;
+
+    if (category === ALL_CATEGORY_ID) {
+        var sheet = document.querySelector('.menu-sheet');
+        if (sheet) {
+            y = sheet.getBoundingClientRect().top + window.pageYOffset;
+        } else {
+            y = 0;
+        }
+    } else {
+        var targetSection = document.getElementById('category-section-' + category);
+        if (!targetSection) {
+            window._categoryClickScrolling = false;
+            return;
+        }
+        y = targetSection.getBoundingClientRect().top + window.pageYOffset - barH;
+    }
+
+    window.scrollTo({ top: Math.max(0, y), behavior: behavior });
+    window._categoryClickScrollTimer = setTimeout(function () {
+        window._categoryClickScrolling = false;
+    }, behavior === 'smooth' ? 900 : 80);
+}
+
+function ensureAllCategoriesRendered() {
+    var needsRender = _activeCategory !== ALL_CATEGORY_ID || menuStillLoading() ||
+        !document.querySelector('[data-category-section]');
+    _activeCategory = ALL_CATEGORY_ID;
+    document.body.classList.add('category-selected', 'category-all-active');
+    if (needsRender) {
+        renderMenuItems(filterItemsByCategory(cachedMenuItems, ALL_CATEGORY_ID));
+        renderMenuCardsWithFeatures();
+        if (window._observeCategorySections) window._observeCategorySections();
+    }
+}
+
 function switchCategory(category, options) {
     options = options || {};
+    var emenu = isEmenuPage();
+
+    /* E-menu: keep full list, sticky bar scrolls to sections (restaurant-app style) */
+    if (emenu && !options.forceFilter) {
+        ensureAllCategoriesRendered();
+        setCategoryPillActive(category);
+
+        if (options.silent) return;
+
+        scrollToCategorySection(
+            category,
+            (options.immediate || menuStillLoading()) ? 'auto' : 'smooth'
+        );
+        return;
+    }
+
     if (_activeCategory === category) {
         if (options.silent || options.immediate || menuStillLoading()) {
             renderMenuItems(filterItemsByCategory(cachedMenuItems, category));
@@ -1728,16 +1825,7 @@ function switchCategory(category, options) {
     document.body.classList.add('category-selected');
     document.body.classList.toggle('category-all-active', category === ALL_CATEGORY_ID);
 
-    var activeTitle = document.getElementById('activeCategoryTitle');
-    if (activeTitle) {
-        activeTitle.textContent = getCategoryDisplayName(category);
-    }
-
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-category') === category);
-    });
-
-    scrollCategoryBarToActive();
+    setCategoryPillActive(category);
 
     const grid = document.getElementById('menuGrid');
     if (!grid) return;
@@ -1778,36 +1866,78 @@ function scrollCategoryBarToActive() {
     scroll.scrollTo({ left: scrollLeft, behavior: 'smooth' });
 }
 
+function setupStickyCategoryBar() {
+    if (!isEmenuPage() || window._stickyCategoryBarReady) return;
+    var bar = document.getElementById('categoryBar');
+    var sentinel = document.getElementById('categoryBarSentinel');
+    var spacer = document.getElementById('categoryBarSpacer');
+    if (!bar || !sentinel || !spacer) return;
+    window._stickyCategoryBarReady = true;
+
+    function syncSpacer() {
+        if (bar.classList.contains('is-stuck')) {
+            spacer.style.height = getCategoryBarHeight() + 'px';
+        }
+    }
+
+    var io = new IntersectionObserver(function (entries) {
+        var entry = entries[0];
+        if (!entry) return;
+        var shouldStick = !entry.isIntersecting && entry.boundingClientRect.top < 1;
+        bar.classList.toggle('is-stuck', shouldStick);
+        document.body.classList.toggle('category-bar-stuck', shouldStick);
+        if (shouldStick) {
+            spacer.style.height = getCategoryBarHeight() + 'px';
+        } else {
+            spacer.style.height = '0px';
+        }
+    }, { threshold: [0, 1], rootMargin: '0px 0px 0px 0px' });
+
+    io.observe(sentinel);
+    window.addEventListener('resize', syncSpacer, { passive: true });
+    window._syncStickyCategoryBar = syncSpacer;
+}
+
 function setupCategoryScrollSpy() {
     if (window._categoryScrollSpy) return;
     window._categoryScrollSpy = true;
 
+    setupStickyCategoryBar();
+
     var sections = [];
     var observer = new IntersectionObserver(function (entries) {
-        var anyIntersecting = false;
-        var activeCat = null;
+        if (window._categoryClickScrolling) return;
+
+        var visible = [];
         entries.forEach(function (entry) {
             if (!entry.isIntersecting) return;
-            anyIntersecting = true;
-            var cat = entry.target.getAttribute('data-category-section');
-            if (cat) activeCat = cat;
+            visible.push(entry);
         });
-        if (!anyIntersecting) return;
-        document.querySelectorAll('.category-btn').forEach(function (btn) {
-            btn.classList.toggle('active', btn.getAttribute('data-category') === activeCat);
-        });
-        if (!activeCat || !document.querySelector('.category-btn.active')) {
-            var allBtn = document.querySelector('.category-btn-all');
-            if (allBtn) {
-                document.querySelectorAll('.category-btn').forEach(function (btn) { btn.classList.remove('active'); });
-                allBtn.classList.add('active');
-            }
+
+        /* Also check currently observed sections for the topmost in the active band */
+        if (!visible.length) {
+            sections.forEach(function (el) {
+                var rect = el.getBoundingClientRect();
+                var bandTop = getCategoryBarHeight();
+                var bandBottom = window.innerHeight * 0.45;
+                if (rect.top < bandBottom && rect.bottom > bandTop + 20) {
+                    visible.push({ target: el, boundingClientRect: rect });
+                }
+            });
         }
-        scrollCategoryBarToActive();
+        if (!visible.length) return;
+
+        visible.sort(function (a, b) {
+            return a.boundingClientRect.top - b.boundingClientRect.top;
+        });
+        var activeCat = visible[0].target.getAttribute('data-category-section');
+        if (!activeCat) return;
+
+        setCategoryPillActive(activeCat);
     }, {
         root: null,
-        rootMargin: '-20% 0px -60% 0px',
-        threshold: 0
+        rootMargin: '-12% 0px -55% 0px',
+        threshold: [0, 0.15, 0.4]
     });
 
     function observeSections() {
@@ -1817,6 +1947,7 @@ function setupCategoryScrollSpy() {
             sections.push(el);
             observer.observe(el);
         });
+        if (window._syncStickyCategoryBar) window._syncStickyCategoryBar();
     }
 
     window._observeCategorySections = observeSections;
@@ -1827,9 +1958,20 @@ function setupCategoryScrollSpy() {
    Menu Items Rendering
    ======================================== */
 
-/* ========================================
-   Menu Items Rendering
-   ======================================== */
+var MENU_FEATURES = window.MENU_FEATURES || {
+    getFavorites: function () {
+        try { return JSON.parse(localStorage.getItem('menu_favorites') || '[]'); } catch (e) { return []; }
+    },
+    toggleFav: function (id) {
+        var favs = this.getFavorites();
+        var idx = favs.indexOf(id);
+        if (idx > -1) { favs.splice(idx, 1); } else { favs.push(id); }
+        localStorage.setItem('menu_favorites', JSON.stringify(favs));
+        return idx === -1;
+    },
+    isFav: function (id) { return this.getFavorites().indexOf(id) > -1; }
+};
+window.MENU_FEATURES = MENU_FEATURES;
 
 function createMenuCard(item, lang, strings) {
     const card = document.createElement('div');
@@ -1867,6 +2009,15 @@ function createMenuCard(item, lang, strings) {
         ? (item.price ? item.price.toLocaleString() : '0') + ' د.ع'
         : (item.price ? item.price.toLocaleString() : '0') + ' IQD';
 
+    const isFav = MENU_FEATURES.isFav(item.id);
+    const favLabel = isFav ? (strings.removeFromFavorites || 'Remove from favorites') : (strings.addToFavorites || 'Add to favorites');
+    const favBtnHtml =
+        '<button class="menu-card-fav' + (isFav ? ' is-fav' : '') + '" data-item-id="' + item.id + '" aria-label="' + favLabel + '" title="' + favLabel + '">' +
+            '<svg width="17" height="17" viewBox="0 0 24 24" fill="' + (isFav ? 'currentColor' : 'none') + '" stroke="currentColor" stroke-width="1.8">' +
+                '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>' +
+            '</svg>' +
+        '</button>';
+
     if (isEmenu) {
         card.innerHTML = `
             <div class="menu-card-img-wrapper">
@@ -1876,13 +2027,16 @@ function createMenuCard(item, lang, strings) {
             </div>
             <div class="menu-card-foot">
                 <span class="menu-card-foot-title">${name}</span>
-                <button class="menu-card-cart" data-item-id="${item.id}" aria-label="Add to Cart">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <circle cx="9" cy="21" r="1"></circle>
-                        <circle cx="20" cy="21" r="1"></circle>
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                    </svg>
-                </button>
+                <div class="menu-card-foot-actions">
+                    ${favBtnHtml}
+                    <button class="menu-card-cart" data-item-id="${item.id}" aria-label="Add to Cart">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <circle cx="9" cy="21" r="1"></circle>
+                            <circle cx="20" cy="21" r="1"></circle>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
         `;
     } else {
@@ -1900,13 +2054,16 @@ function createMenuCard(item, lang, strings) {
                         ${item.price ? item.price.toLocaleString() : '0'}
                         <span class="price-currency">IQD</span>
                     </div>
-                    <button class="menu-card-cart" data-item-id="${item.id}" aria-label="Add to Cart">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="9" cy="21" r="1"></circle>
-                            <circle cx="20" cy="21" r="1"></circle>
-                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                        </svg>
-                    </button>
+                    <div class="menu-card-foot-actions">
+                        ${favBtnHtml}
+                        <button class="menu-card-cart" data-item-id="${item.id}" aria-label="Add to Cart">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="9" cy="21" r="1"></circle>
+                                <circle cx="20" cy="21" r="1"></circle>
+                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -1923,6 +2080,23 @@ function createMenuCard(item, lang, strings) {
             addToCart(item);
             cartBtn.classList.add('added');
             setTimeout(() => cartBtn.classList.remove('added'), 600);
+        });
+    }
+
+    const favBtn = card.querySelector('.menu-card-fav');
+    if (favBtn) {
+        favBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var nowFav = MENU_FEATURES.toggleFav(item.id);
+            favBtn.classList.toggle('is-fav', nowFav);
+            var svg = favBtn.querySelector('svg');
+            if (svg) svg.setAttribute('fill', nowFav ? 'currentColor' : 'none');
+            var label = nowFav
+                ? (strings.removeFromFavorites || 'Remove from favorites')
+                : (strings.addToFavorites || 'Add to favorites');
+            favBtn.setAttribute('aria-label', label);
+            favBtn.setAttribute('title', label);
+            updateFavBadge();
         });
     }
 
@@ -2274,6 +2448,23 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Favorites button + panel
+    updateFavBadge();
+    var favBtn = document.getElementById('favBtn');
+    if (favBtn) {
+        favBtn.addEventListener('click', openFavPanel);
+    }
+    var favClose = document.getElementById('favClose');
+    if (favClose) {
+        favClose.addEventListener('click', closeFavPanel);
+    }
+    var favOverlay = document.getElementById('favOverlay');
+    if (favOverlay) {
+        favOverlay.addEventListener('click', function (e) {
+            if (e.target === favOverlay) closeFavPanel();
+        });
+    }
+
     var cartClear = document.getElementById('cartClear');
     if (cartClear) {
         cartClear.addEventListener('click', function() {
@@ -2596,6 +2787,12 @@ function setupThemeToggle() {
         return;
     }
 
+    // Index landing must stay dark so video/splash never flash white from a saved light theme.
+    if (document.body.classList.contains('index-page')) {
+        document.body.classList.remove('light-mode');
+        return;
+    }
+
     const savedTheme = localStorage.getItem('theme') || 'dark';
 
     if (savedTheme === 'light') {
@@ -2619,6 +2816,7 @@ var MENU_THEMES = window.MENU_THEMES || {
     cream:  { id: 'cream',  light: true,  meta: '#8B6914', brown: '#8B6914', bg: '#FAF7F2', cat: '#F0E9DF', card: '#FFFFFF', surface: '#FFFFFF', pill: '#FFFFFF', fab: '#FFFFFF', text: '#2C2416', border: '#E8DFD2', fabText: '#6B5E54' },
     coffee: { id: 'coffee', light: true,  meta: '#6F4E37', brown: '#6F4E37', bg: '#F5EDE3', cat: '#EBE0D4', card: '#FFFCF8', surface: '#FFFCF8', pill: '#FFFCF8', fab: '#FFFFFF', text: '#2A2018', border: '#DDD0C4', fabText: '#6B5344' },
     gold:   { id: 'gold',   light: true,  meta: '#B8910C', brown: '#B8910C', bg: '#FFFDF5', cat: '#FBF5E6', card: '#FFFFFF', surface: '#FFFFFF', pill: '#FFFFFF', fab: '#FFFFFF', text: '#1A1608', border: '#EDE4CC', fabText: '#6B6248' },
+    red:    { id: 'red',    light: true,  meta: '#C21807', brown: '#C21807', bg: '#FFF6F5', cat: '#F8EDEB', card: '#FFFFFF', surface: '#FFFFFF', pill: '#FFFFFF', fab: '#FFFFFF', text: '#1F1210', border: '#EDD5D2', fabText: '#6B4540' },
     mocha:  { id: 'mocha',  light: true,  meta: '#5C4033', brown: '#5C4033', bg: '#F3EBE4', cat: '#E8DDD4', card: '#FAF6F2', surface: '#FAF6F2', pill: '#FAF6F2', fab: '#FFFFFF', text: '#261A14', border: '#D9CEC4', fabText: '#6B5A50' },
     dark:   { id: 'dark',   light: false, meta: '#1A1A1A', brown: '#C4956A', bg: '#141414', cat: '#1E1E1E', card: '#2A2A2A', surface: '#2A2A2A', pill: '#2A2A2A', fab: '#333333', text: '#F0F0F0', border: '#444444', fabText: '#CFCFCF' }
 };
@@ -2720,8 +2918,8 @@ function setupMenuThemePicker() {
 }
 
 var HERO_TYPE_PHRASES = [
-    { text: ' مطعم الدمشقي', dir: 'rtl' },
-    { text: 'Dimashqi Restauran', dir: 'ltr' }
+    { text: ' مطعـم یاسمین الشام', dir: 'rtl' },
+    { text: 'YASAMIN AL-SHAM', dir: 'ltr' }
 ];
 
 function heroTypeChars(str) {
@@ -3419,7 +3617,7 @@ function getCafeInfo() {
     var closeMinutes = parseCafeTimeToMinutes(closeTime, 2);
 
     return {
-        name: localStorage.getItem('cafeName') || 'Shawarma',
+        name: localStorage.getItem('cafeName') || 'YASAMIN AL-SHAM',
         phone: normalizeWhatsAppPhone(localStorage.getItem('whatsappPhone') || '9647506454656'),
         locationUrl: storedUrl || defaultUrl,
         locationLabel: storedLabel || defaultLabel,
@@ -3740,32 +3938,127 @@ function renderCartItems() {
 }
 
 /* ========================================
-    Menu Features: Favorites & Ratings (DISABLED)
+    Favorites panel
     ======================================== */
 
-var MENU_FEATURES = {
-    getFavorites() {
-        try { return JSON.parse(localStorage.getItem('menu_favorites') || '[]'); } catch(e) { return []; }
-    },
-    toggleFav(id) {
-        var favs = this.getFavorites();
-        var idx = favs.indexOf(id);
-        if (idx > -1) { favs.splice(idx, 1); } else { favs.push(id); }
-        localStorage.setItem('menu_favorites', JSON.stringify(favs));
-        return idx === -1;
-    },
-    isFav(id) { return this.getFavorites().indexOf(id) > -1; },
-    getRating(itemId) {
-        try { var r = JSON.parse(localStorage.getItem('menu_ratings') || '{}'); return r[itemId] || 0; } catch(e) { return 0; }
-    },
-    setRating(itemId, stars) {
-        try { var r = JSON.parse(localStorage.getItem('menu_ratings') || '{}'); r[itemId] = stars; localStorage.setItem('menu_ratings', JSON.stringify(r)); } catch(e) {}
+function updateFavBadge() {
+    var badge = document.getElementById('favBadge');
+    if (!badge) return;
+    var count = MENU_FEATURES.getFavorites().length;
+    badge.textContent = String(count);
+    badge.classList.toggle('show', count > 0);
+}
+
+function findMenuItemById(itemId) {
+    if (!itemId) return null;
+    if (Array.isArray(cachedMenuItems)) {
+        for (var i = 0; i < cachedMenuItems.length; i++) {
+            if (cachedMenuItems[i] && cachedMenuItems[i].id === itemId) return cachedMenuItems[i];
+        }
     }
-};
+    if (window.MenuData && typeof MenuData.getItems === 'function') {
+        var items = MenuData.getItems() || [];
+        for (var j = 0; j < items.length; j++) {
+            var row = items[j];
+            var data = row && (row.data || row);
+            var id = row && row.id;
+            if (id === itemId) return Object.assign({ id: id }, typeof data === 'function' ? data() : data);
+        }
+    }
+    return null;
+}
+
+function openFavPanel() {
+    renderFavItems();
+    var overlay = document.getElementById('favOverlay');
+    if (overlay) {
+        overlay.classList.add('open');
+        document.body.classList.add('fav-open');
+    }
+}
+
+function closeFavPanel() {
+    var overlay = document.getElementById('favOverlay');
+    if (overlay) {
+        overlay.classList.remove('open');
+        document.body.classList.remove('fav-open');
+    }
+}
+
+function renderFavItems() {
+    var container = document.getElementById('favItems');
+    if (!container) return;
+    var lang = localStorage.getItem('selectedLang') || 'ku';
+    var S = i18n[lang] || i18n.en;
+    var favIds = MENU_FEATURES.getFavorites();
+    var fallbackImage = 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27100%27 height=%27100%27%3E%3Crect fill=%231a1a1a width=%27100%27 height=%27100%27/%3E%3Ctext x=%2750%25%27 y=%2750%25%27 font-size=%2724%27 text-anchor=%27middle%27 dy=%27.3em%27 fill=%23C21807%27%3E%E2%99%A5%3C/text%3E%3C/svg%3E';
+
+    if (!favIds.length) {
+        container.innerHTML =
+            '<div class="fav-empty">' +
+                '<div class="fav-empty-icon">♡</div>' +
+                '<p>' + (S.favoritesEmpty || 'No favorites yet') + '</p>' +
+            '</div>';
+        return;
+    }
+
+    var html = '';
+    favIds.forEach(function (id) {
+        var item = findMenuItemById(id);
+        if (!item) return;
+        var name = item['name_' + lang] || item.name_en || item.name_ar || item.name_ku || 'Item';
+        var price = item.price ? Number(item.price).toLocaleString() : '0';
+        var img = normalizeImageUrl(item.image) || fallbackImage;
+        html +=
+            '<div class="fav-item" data-id="' + id + '">' +
+                '<div class="fav-item-img"><img src="' + img + '" alt="" onerror="this.onerror=null;this.src=\'' + fallbackImage + '\'"></div>' +
+                '<div class="fav-item-info">' +
+                    '<span class="fav-item-name">' + name + '</span>' +
+                    '<span class="fav-item-price">' + price + ' IQD</span>' +
+                '</div>' +
+                '<div class="fav-item-actions">' +
+                    '<button type="button" class="fav-item-cart" data-id="' + id + '" aria-label="' + (S.addToCart || 'Add to cart') + '">' +
+                        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>' +
+                    '</button>' +
+                    '<button type="button" class="fav-item-remove" data-id="' + id + '" aria-label="' + (S.removeFromFavorites || 'Remove') + '">✕</button>' +
+                '</div>' +
+            '</div>';
+    });
+
+    if (!html) {
+        container.innerHTML =
+            '<div class="fav-empty">' +
+                '<div class="fav-empty-icon">♡</div>' +
+                '<p>' + (S.favoritesEmpty || 'No favorites yet') + '</p>' +
+            '</div>';
+        return;
+    }
+
+    container.innerHTML = html;
+
+    container.querySelectorAll('.fav-item-cart').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var item = findMenuItemById(this.getAttribute('data-id'));
+            if (item) addToCart(item);
+        });
+    });
+
+    container.querySelectorAll('.fav-item-remove').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            MENU_FEATURES.toggleFav(this.getAttribute('data-id'));
+            updateFavBadge();
+            renderFavItems();
+            document.querySelectorAll('.menu-card-fav[data-item-id="' + this.getAttribute('data-id') + '"]').forEach(function (cardBtn) {
+                cardBtn.classList.remove('is-fav');
+                var svg = cardBtn.querySelector('svg');
+                if (svg) svg.setAttribute('fill', 'none');
+            });
+        });
+    });
+}
 
 function renderMenuCardsWithFeatures() {
-    // Favorites and ratings are disabled - cart is now used instead
-    // This function is kept for compatibility but does nothing
+    updateFavBadge();
 }
 
 /* ========================================

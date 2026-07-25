@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>مطعم الدمشقي</title>
+    <title>مطعـم یاسمین الشام</title>
     <link rel="manifest" href="manifest.json?v=117">
-    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/shawarma demeshq-logo.jpg?v=1">
-    <meta name="application-name" content="Shawarma">
+    <link rel="icon" type="image/png" href="assets/yassamin-alsham-logo.png?v=8">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/yassamin-alsham-logo.png?v=8">
+    <meta name="application-name" content="YASAMIN AL-SHAM">
     <meta name="msapplication-TileColor" content="#5C4033">
-    <meta name="msapplication-TileImage" content="assets/shawarma demeshq-logo.jpg?v=1">
+    <meta name="msapplication-TileImage" content="assets/yassamin-alsham-logo.png?v=8">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Shawarma">
-    <meta name="theme-color" content="#8B6914">
+    <meta name="apple-mobile-web-app-title" content="YASAMIN AL-SHAM">
+    <meta name="theme-color" content="#0A0A0B">
+    <style>html,body{background:#0A0A0B!important;}</style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Tajawal:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=117">
+    <link rel="stylesheet" href="css/style.css?v=133">
     <style>
         :lang(en) {
             font-family: var(--font-body);
@@ -25,20 +26,114 @@
         :lang(ar), :lang(ku) {
             font-family: var(--font-arabic);
         }
-        .cafe-name {
+
+        /* Keep index dark — never inherit menu light theme */
+        body.index-page,
+        body.index-page.light-mode {
+            background: #0A0A0B !important;
+        }
+        body.index-page .logo-splash,
+        body.index-page.light-mode .logo-splash {
+            background: #0A0A0B !important;
+        }
+        body.index-page .bg-video,
+        body.index-page.light-mode .bg-video {
+            opacity: 1 !important;
+            filter: brightness(0.6) contrast(1.1) !important;
+            background: #0A0A0B;
+        }
+        body.index-page .bg-overlay,
+        body.index-page.light-mode .bg-overlay {
+            background: linear-gradient(
+                180deg,
+                rgba(10,10,11,0.55) 0%,
+                rgba(10,10,11,0.25) 40%,
+                rgba(10,10,11,0.6) 100%
+            ) !important;
+        }
+
+        /* Full vertical logo — no circle crop */
+        body.index-page .logo-splash img {
+            width: auto;
+            height: clamp(120px, 22vh, 180px);
+            max-width: min(52vw, 160px);
+            border-radius: 0;
+            object-fit: contain;
+            border: none;
+            background: transparent;
+            filter: drop-shadow(0 10px 28px rgba(194,24,7,0.35));
+            box-shadow: none;
+        }
+        body.index-page .logo-float-wrap {
+            width: auto;
+            height: auto;
+            border-radius: 0;
+            box-shadow: none;
+            background: transparent;
+            overflow: visible;
+        }
+        body.index-page .hero .logo {
+            width: auto !important;
+            height: clamp(140px, 26vh, 220px) !important;
+            max-width: min(56vw, 180px);
+            border-radius: 0;
+            object-fit: contain;
+            border: none;
+            background: transparent;
+            filter: drop-shadow(0 12px 36px rgba(194,24,7,0.4));
+            box-shadow: none;
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+        body.index-page .hero .logo:hover {
+            transform: scale(1.03);
+            filter: drop-shadow(0 16px 44px rgba(194,24,7,0.5));
+            box-shadow: none;
+        }
+        @media (max-width: 480px) {
+            body.index-page .logo-splash img {
+                height: clamp(96px, 18vh, 130px);
+                max-width: min(42vw, 120px);
+            }
+            body.index-page .hero .logo {
+                height: clamp(110px, 20vh, 150px) !important;
+                max-width: min(44vw, 130px);
+            }
+        }
+
+        /* Arabic title under brand mark */
+        body.index-page .cafe-name,
+        body.index-page.light-mode .cafe-name {
             font-family: inherit;
             letter-spacing: 0.05em;
-            font-size: clamp(2.2rem, 8vw, 4.2rem);
+            font-size: clamp(1.35rem, 4.8vw, 2rem);
             font-weight: 700;
-            line-height: 1.05;
+            line-height: 1.15;
             text-transform: none;
-            color: #F7D87D;
-            text-shadow: 0 2px 20px rgba(0,0,0,0.24);
+            color: #FFFFFF !important;
+            text-shadow: 0 2px 16px rgba(0,0,0,0.55);
+            margin-top: 0.35rem;
         }
-        .logo-splash-text {
+        body.index-page #heroTitleTyped,
+        body.index-page .cafe-name .menu-hero-typed {
+            color: #FFFFFF !important;
+            font-size: inherit;
+            text-shadow: 0 2px 16px rgba(0,0,0,0.55);
+        }
+        body.index-page .cafe-name .menu-hero-cursor {
+            background: #FFFFFF !important;
+            box-shadow: 0 0 8px rgba(255,255,255,0.45);
+        }
+
+        /* Splash: title white, dots red */
+        body.index-page .logo-splash-text {
             font-family: inherit;
             letter-spacing: 0.02em;
             font-size: 1.1rem;
+            color: #FFFFFF !important;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.45);
+        }
+        body.index-page .logo-splash-dots span {
+            background: #C21807 !important;
         }
         .lang-btn,
         .lang-sep {
@@ -49,25 +144,25 @@
 <body class="index-page has-video-bg">
 
     <div class="logo-splash" id="logoSplash">
-        <img src="assets/shawarma demeshq-logo.jpg?v=1" alt="Shawarma" onerror="this.onerror=null; this.src='assets/logo.svg';">
-        <span class="logo-splash-text">مطعم الدمشقي</span>
+        <img src="assets/yassamin-logo-full.png?v=9" alt="YASAMIN AL-SHAM" onerror="this.onerror=null; this.src='assets/yassamin-alsham-logo.png?v=8';">
+        <span class="logo-splash-text">مطعـم یاسمین الشام</span>
         <div class="logo-splash-dots"><span></span><span></span><span></span></div>
     </div>
 
     <video class="bg-video" autoplay muted loop playsinline>
-        <source src="images/menu-bg.mp4" type="video/mp4">
+        <source src="images/menu-bg.mp4?v=2" type="video/mp4">
     </video>
     <div class="bg-overlay"></div>
 
     <section class="hero">
         <div class="hero-center">
 <div class="logo-float-wrap">
-                 <img src="assets/shawarma demeshq-logo.jpg?v=1" alt="Shawarma" class="logo" id="indexLogo"
-                     onerror="this.onerror=null; this.src='assets/logo.svg';">
+                 <img src="assets/yassamin-logo-full.png?v=9" alt="YASAMIN AL-SHAM" class="logo" id="indexLogo"
+                     onerror="this.onerror=null; this.src='assets/yassamin-alsham-logo.png?v=8';">
                </div>
                <h1 class="cafe-name">
                  <span class="menu-hero-typewriter" id="heroTypewriter" aria-live="polite">
-                     <span class="menu-hero-typed" id="heroTitleTyped" dir="rtl">مطعم الدمشقي</span><span class="menu-hero-cursor" id="heroTitleCursor" aria-hidden="true"></span>
+                     <span class="menu-hero-typed" id="heroTitleTyped" dir="rtl">مطعـم یاسمین الشام</span><span class="menu-hero-cursor" id="heroTitleCursor" aria-hidden="true"></span>
                  </span>
                </h1>
 
@@ -90,19 +185,39 @@
         </div>
     </section>
 
-    <script src="js/app.js?v=117"></script>
+    <script src="js/app.js?v=118"></script>
     <script>
         (function () {
+            document.body.classList.remove('light-mode');
+
             var splash = document.getElementById('logoSplash');
+            var video = document.querySelector('.bg-video');
+            var splashHidden = false;
+
             function hideSplash() {
-                if (!splash) return;
+                if (!splash || splashHidden) return;
+                splashHidden = true;
                 splash.classList.add('hidden');
                 setTimeout(function () { splash.style.display = 'none'; }, 500);
             }
+
+            function readyToHide() {
+                setTimeout(hideSplash, 900);
+            }
+
+            if (video) {
+                if (video.readyState >= 2) {
+                    readyToHide();
+                } else {
+                    video.addEventListener('loadeddata', readyToHide, { once: true });
+                    video.addEventListener('canplay', readyToHide, { once: true });
+                }
+            }
+
             window.addEventListener('load', function () {
-                setTimeout(hideSplash, 1200);
+                setTimeout(hideSplash, 1600);
             });
-            setTimeout(hideSplash, 3500);
+            setTimeout(hideSplash, 4000);
 
             var logo = document.getElementById('indexLogo');
             setupLogoClickActions(logo, function () {

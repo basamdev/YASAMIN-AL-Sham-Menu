@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ali-cafe-v118';
+const CACHE_NAME = 'yassamin-v119';
 const APP_SHELL_PATHS = /\.(html|css|js)$/i;
 const FIREBASE_SDK_URLS = [
     'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
@@ -9,7 +9,8 @@ const FIREBASE_SDK_URLS = [
 // so root-absolute paths like '/index.html' would 404 and break install.
 const STATIC_ASSETS = [
     './manifest.json',
-    './assets/shawarma demeshq-logo.jpg',
+    './assets/yassamin-alsham-logo.png',
+    './assets/yassamin-logo-full.png',
     './assets/logo.svg',
     './images/flag-kurdistan.svg',
     './images/install/ios-step-1.png?v=2',

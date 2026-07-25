@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seed Test Menu — YASAMIN AL-SHAM</title>
+    <link rel="icon" type="image/png" href="assets/yassamin-alsham-logo.png?v=8">
+    <style>
+        :root {
+            --bg: #0f0f10;
+            --card: #1a1a1c;
+            --red: #C21807;
+            --text: #f5f5f5;
+            --muted: #9a9a9a;
+            --ok: #2ecc71;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: system-ui, Segoe UI, sans-serif;
+            background: radial-gradient(ellipse at top, #2a1210 0%, var(--bg) 55%);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .card {
+            width: min(520px, 100%);
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 28px 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+        }
+        .logo {
+            width: 72px;
+            height: auto;
+            display: block;
+            margin: 0 auto 14px;
+            filter: drop-shadow(0 8px 20px rgba(194,24,7,0.35));
+        }
+        h1 {
+            margin: 0 0 8px;
+            font-size: 1.35rem;
+            text-align: center;
+        }
+        p {
+            margin: 0 0 20px;
+            color: var(--muted);
+            font-size: 0.92rem;
+            line-height: 1.45;
+            text-align: center;
+        }
+        .auth {
+            text-align: center;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            color: var(--muted);
+        }
+        .auth.ok { color: var(--ok); }
+        .auth.bad { color: #ff6b6b; }
+        button {
+            width: 100%;
+            border: 0;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            background: var(--red);
+            color: #fff;
+            transition: transform 0.15s ease, opacity 0.15s ease;
+        }
+        button:hover:not(:disabled) { transform: translateY(-1px); }
+        button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+        button.secondary {
+            margin-top: 10px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.18);
+            font-weight: 600;
+        }
+        #status {
+            margin-top: 16px;
+            min-height: 1.4em;
+            font-size: 0.9rem;
+            text-align: center;
+            white-space: pre-wrap;
+            color: var(--muted);
+        }
+        #status.ok { color: var(--ok); }
+        #status.err { color: #ff6b6b; }
+        .links {
+            margin-top: 18px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .links a {
+            color: #ffb4a8;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <img class="logo" src="assets/yassamin-logo-full.png?v=9" alt="YASAMIN AL-SHAM">
+        <h1>Seed Test Menu</h1>
+        <p>
+            One click adds many restaurant categories and menu items to Firebase
+            so you can test sticky category scrolling.
+        </p>
+        <div class="auth" id="authState">Checking login…</div>
+        <button type="button" id="seedBtn" disabled>Add test categories & items</button>
+        <button type="button" class="secondary" id="clearBtn" disabled>Clear seeded test data</button>
+        <div id="status"></div>
+        <div class="links">
+            <a href="login.html">Admin login</a>
+            <a href="menu.html">Open menu</a>
+            <a href="admin.html">Admin panel</a>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="js/firebase.js"></script>
+    <script>
+(function () {
+    var authEl = document.getElementById('authState');
+    var statusEl = document.getElementById('status');
+    var seedBtn = document.getElementById('seedBtn');
+    var clearBtn = document.getElementById('clearBtn');
+    var currentUser = null;
+
+    var SEED_TAG = 'yassamin_seed_v1';
+
+    var CATALOG = [
+        {
+            id: 'appetizers',
+            order: 1,
+            name_ku: 'مقبلات',
+            name_ar: 'مقبلات',
+            name_en: 'Appetizers',
+            image: 'https://images.unsplash.com/photo-1541529086526-db283c563270?w=200',
+            items: [
+                ['حمص', 'حمص', 'Hummus', 2500, 'https://images.unsplash.com/photo-1577906096429-f73c2c72dbaa?w=400'],
+                ['متبل', 'متبل', 'Mutabal', 2500, 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400'],
+                ['فتوش', 'فتوش', 'Fattoush', 3000, 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400'],
+                ['تبولة', 'تبولة', 'Tabbouleh', 3000, 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400'],
+                ['فتة حمص', 'فتة حمص', 'Fatteh Hummus', 4000, 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400']
+            ]
+        },
+        {
+            id: 'shawarma',
+            order: 2,
+            name_ku: 'شاورما',
+            name_ar: 'شاورما',
+            name_en: 'Shawarma',
+            image: 'https://images.unsplash.com/photo-1529006557810-274b0b6c0270?w=200',
+            items: [
+                ['شاورما دجاج', 'شاورما دجاج', 'Chicken Shawarma', 4500, 'https://images.unsplash.com/photo-1633324370328-5b41da8caba1?w=400'],
+                ['شاورما لحم', 'شاورما لحم', 'Meat Shawarma', 5500, 'https://images.unsplash.com/photo-1561651823-34feb02250e4?w=400'],
+                ['صينية شاورما', 'صينية شاورما', 'Shawarma Plate', 8000, 'https://images.unsplash.com/photo-1529006557810-274b0b6c0270?w=400'],
+                ['شاورما مخلوط', 'شاورما مشكل', 'Mixed Shawarma', 6000, 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=400']
+            ]
+        },
+        {
+            id: 'grills',
+            order: 3,
+            name_ku: 'مشاوي',
+            name_ar: 'مشاوي',
+            name_en: 'Grills',
+            image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200',
+            items: [
+                ['كباب مشوي', 'كباب مشوي', 'Grilled Kebab', 7000, 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=400'],
+                ['شيش طاووق', 'شيش طاووق', 'Shish Tawook', 6500, 'https://images.unsplash.com/photo-1527477396000-e27170b503a0?w=400'],
+                ['كفتة', 'كفتة', 'Kofta', 6500, 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400'],
+                ['مشكل مشاوي', 'مشكل مشاوي', 'Mixed Grill', 12000, 'https://images.unsplash.com/photo-1544025162-d76690232d66?w=400'],
+                ['ريش غنم', 'ريش غنم', 'Lamb Chops', 14000, 'https://images.unsplash.com/photo-1432139509613-5c4255815697?w=400']
+            ]
+        },
+        {
+            id: 'broasted',
+            order: 4,
+            name_ku: 'بروستد',
+            name_ar: 'بروستد',
+            name_en: 'Broasted',
+            image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=200',
+            items: [
+                ['بروستد دجاج نصف', 'بروستد نصف', 'Half Broasted', 7000, 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400'],
+                ['بروستد كامل', 'بروستد كامل', 'Full Broasted', 12000, 'https://images.unsplash.com/photo-1562967914-608f82629710?w=400'],
+                ['قطع بروستد', 'قطع بروستد', 'Broasted Pieces', 5000, 'https://images.unsplash.com/photo-1562967916-eb82221dfb92?w=400']
+            ]
+        },
+        {
+            id: 'sandwiches',
+            order: 5,
+            name_ku: 'سەندویچ',
+            name_ar: 'سندويش',
+            name_en: 'Sandwiches',
+            image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=200',
+            items: [
+                ['سندويش فلافل', 'سندويش فلافل', 'Falafel Sandwich', 2500, 'https://images.unsplash.com/photo-1593001872095-7d5b90c665ea?w=400'],
+                ['سندويش شاورما', 'سندويش شاورما', 'Shawarma Sandwich', 3500, 'https://images.unsplash.com/photo-1633324370328-5b41da8caba1?w=400'],
+                ['سندويش كباب', 'سندويش كباب', 'Kebab Sandwich', 4000, 'https://images.unsplash.com/photo-1553909489-cd47e0907980?w=400'],
+                ['كرسبي سندويش', 'سندويش كرسبي', 'Crispy Sandwich', 4000, 'https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=400']
+            ]
+        },
+        {
+            id: 'meals',
+            order: 6,
+            name_ku: 'ژەمەکان',
+            name_ar: 'وجبات',
+            name_en: 'Meals',
+            image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=200',
+            items: [
+                ['وجبة عائلة', 'وجبة عائلية', 'Family Meal', 25000, 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400'],
+                ['وجبة شخص واحد', 'وجبة فردية', 'Single Meal', 9000, 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400'],
+                ['وجبة أرز', 'وجبة أرز', 'Rice Meal', 7000, 'https://images.unsplash.com/photo-1516684735270-3b4e8f6f9d96?w=400'],
+                ['منسف', 'منسف', 'Mansaf', 11000, 'https://images.unsplash.com/photo-1604908177522-347f57ac1f4f?w=400']
+            ]
+        },
+        {
+            id: 'pizza',
+            order: 7,
+            name_ku: 'پیتزا',
+            name_ar: 'بيتزا',
+            name_en: 'Pizza',
+            image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200',
+            items: [
+                ['بيتزا مارغريتا', 'بيتزا مارغريتا', 'Margherita Pizza', 7000, 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400'],
+                ['بيتزا دجاج', 'بيتزا دجاج', 'Chicken Pizza', 8500, 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400'],
+                ['بيتزا مشكل', 'بيتزا مشكل', 'Mixed Pizza', 9000, 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400']
+            ]
+        },
+        {
+            id: 'salads',
+            order: 8,
+            name_ku: 'زەڵاتە',
+            name_ar: 'سلطات',
+            name_en: 'Salads',
+            image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200',
+            items: [
+                ['سلطة سيزر', 'سلطة سيزر', 'Caesar Salad', 4500, 'https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400'],
+                ['سلطة يونانية', 'سلطة يونانية', 'Greek Salad', 4000, 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400'],
+                ['سلطة خضراء', 'سلطة خضراء', 'Green Salad', 3000, 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400']
+            ]
+        },
+        {
+            id: 'sides',
+            order: 9,
+            name_ku: 'زیادەکان',
+            name_ar: 'إضافات',
+            name_en: 'Sides',
+            image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=200',
+            items: [
+                ['بطاطا مقلية', 'بطاطا مقلية', 'French Fries', 2000, 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400'],
+                ['حلقات بصل', 'حلقات بصل', 'Onion Rings', 2500, 'https://images.unsplash.com/photo-1639024471283-03518883512d?w=400'],
+                ['ثومية', 'ثومية', 'Garlic Sauce', 1000, 'https://images.unsplash.com/photo-1472476443507-c7a5948772fc?w=400'],
+                ['خبز عربي', 'خبز عربي', 'Arabic Bread', 500, 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400']
+            ]
+        },
+        {
+            id: 'drinks',
+            order: 10,
+            name_ku: 'خواردنەوە',
+            name_ar: 'مشروبات',
+            name_en: 'Soft Drinks',
+            image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=200',
+            items: [
+                ['كولا', 'كولا', 'Cola', 1000, 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=400'],
+                ['سبرايت', 'سبرايت', 'Sprite', 1000, 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=400'],
+                ['ماء', 'ماء', 'Water', 500, 'https://images.unsplash.com/photo-1548832335-cf2207f68b5e?w=400'],
+                ['عصير علب', 'عصير علب', 'Canned Juice', 1500, 'https://images.unsplash.com/photo-1622597467836-f3285f2131b8?w=400']
+            ]
+        },
+        {
+            id: 'juices',
+            order: 11,
+            name_ku: 'عەصیر',
+            name_ar: 'عصائر طازجة',
+            name_en: 'Fresh Juices',
+            image: 'https://images.unsplash.com/photo-1622597467836-f3285f2131b8?w=200',
+            items: [
+                ['عصير برتقال', 'عصير برتقال', 'Orange Juice', 3000, 'https://images.unsplash.com/photo-1613478223719-2ab802602423?w=400'],
+                ['عصير ليمون', 'عصير ليمون نعنع', 'Lemon Mint', 3000, 'https://images.unsplash.com/photo-1622597467836-f3285f2131b8?w=400'],
+                ['عصير فراولة', 'عصير فراولة', 'Strawberry Juice', 3500, 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400'],
+                ['كوكتيل فواكه', 'كوكتيل فواكه', 'Fruit Cocktail', 4000, 'https://images.unsplash.com/photo-1546173159-315724a31696?w=400']
+            ]
+        },
+        {
+            id: 'hot-drinks',
+            order: 12,
+            name_ku: 'گەرمی',
+            name_ar: 'مشروبات ساخنة',
+            name_en: 'Hot Drinks',
+            image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200',
+            items: [
+                ['شاي', 'شاي', 'Tea', 1000, 'https://images.unsplash.com/photo-1556881286-fc6915169721?w=400'],
+                ['قهوة عربية', 'قهوة عربية', 'Arabic Coffee', 1500, 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400'],
+                ['نسكافيه', 'نسكافيه', 'Nescafe', 2000, 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400'],
+                ['هوت شوكليت', 'هوت شوكليت', 'Hot Chocolate', 2500, 'https://images.unsplash.com/photo-1542990253-0d0f5be5f0ed?w=400']
+            ]
+        },
+        {
+            id: 'desserts',
+            order: 13,
+            name_ku: 'شیرینی',
+            name_ar: 'حلويات',
+            name_en: 'Desserts',
+            image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=200',
+            items: [
+                ['بقلاوة', 'بقلاوة', 'Baklava', 4000, 'https://images.unsplash.com/photo-1519676867240-f03562e64548?w=400'],
+                ['كنافة', 'كنافة', 'Kunafa', 5000, 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400'],
+                ['آيس كريم', 'آيس كريم', 'Ice Cream', 3000, 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400'],
+                ['تشيز كيك', 'تشيز كيك', 'Cheesecake', 4500, 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=400']
+            ]
+        },
+        {
+            id: 'kids',
+            order: 14,
+            name_ku: 'منداڵان',
+            name_ar: 'وجبات أطفال',
+            name_en: 'Kids Menu',
+            image: 'https://images.unsplash.com/photo-1562967914-608f82629710?w=200',
+            items: [
+                ['وجبة أطفال دجاج', 'وجبة أطفال دجاج', 'Kids Chicken Meal', 5000, 'https://images.unsplash.com/photo-1562967914-608f82629710?w=400'],
+                ['نغتس', 'ناغتس', 'Nuggets', 4000, 'https://images.unsplash.com/photo-1562967916-eb82221dfb92?w=400'],
+                ['ميني بيتزا', 'ميني بيتزا', 'Mini Pizza', 4500, 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400']
+            ]
+        }
+    ];
+
+    function setStatus(msg, type) {
+        statusEl.textContent = msg || '';
+        statusEl.className = type || '';
+    }
+
+    function setBusy(busy) {
+        seedBtn.disabled = busy || !currentUser;
+        clearBtn.disabled = busy || !currentUser;
+    }
+
+    auth.onAuthStateChanged(function (user) {
+        currentUser = user;
+        if (user) {
+            authEl.textContent = 'Logged in as ' + (user.email || user.uid);
+            authEl.className = 'auth ok';
+            seedBtn.disabled = false;
+            clearBtn.disabled = false;
+        } else {
+            authEl.textContent = 'Not logged in — open Admin login first, then come back.';
+            authEl.className = 'auth bad';
+            seedBtn.disabled = true;
+            clearBtn.disabled = true;
+        }
+    });
+
+    async function seedData() {
+        if (!currentUser) {
+            setStatus('Please login first.', 'err');
+            return;
+        }
+        if (!confirm('Add ' + CATALOG.length + ' categories and many menu items for testing?')) return;
+
+        setBusy(true);
+        setStatus('Seeding… please wait');
+
+        try {
+            var catCount = 0;
+            var itemCount = 0;
+            var email = currentUser.email || '';
+
+            for (var i = 0; i < CATALOG.length; i++) {
+                var cat = CATALOG[i];
+                setStatus('Category ' + (i + 1) + '/' + CATALOG.length + ': ' + cat.name_en);
+
+                await db.collection('categories').doc(cat.id).set({
+                    name_ku: cat.name_ku,
+                    name_ar: cat.name_ar,
+                    name_en: cat.name_en,
+                    order: cat.order,
+                    image: cat.image || '',
+                    seedTag: SEED_TAG,
+                    createdBy: email
+                }, { merge: true });
+                catCount++;
+
+                for (var j = 0; j < cat.items.length; j++) {
+                    var it = cat.items[j];
+                    await db.collection('menuItems').add({
+                        name_ku: it[0],
+                        name_ar: it[1],
+                        name_en: it[2],
+                        description_ku: it[2] + ' — تاقیکردنەوە',
+                        description_ar: it[2] + ' — للاختبار',
+                        description_en: it[2] + ' — test item',
+                        price: it[3],
+                        image: it[4],
+                        category: cat.id,
+                        available: true,
+                        seedTag: SEED_TAG,
+                        createdBy: email,
+                        order: j + 1
+                    });
+                    itemCount++;
+                }
+            }
+
+            setStatus('Done! Added/updated ' + catCount + ' categories and ' + itemCount + ' items.\nOpen the menu to test sticky categories.', 'ok');
+        } catch (err) {
+            console.error(err);
+            setStatus('Error: ' + (err && err.message ? err.message : err), 'err');
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    async function clearSeedData() {
+        if (!currentUser) {
+            setStatus('Please login first.', 'err');
+            return;
+        }
+        if (!confirm('Delete ONLY seeded test categories and items?')) return;
+
+        setBusy(true);
+        setStatus('Clearing seeded data…');
+
+        try {
+            var deletedItems = 0;
+            var deletedCats = 0;
+
+            var itemSnap = await db.collection('menuItems').where('seedTag', '==', SEED_TAG).get();
+            var batch = db.batch();
+            var ops = 0;
+            for (var i = 0; i < itemSnap.docs.length; i++) {
+                batch.delete(itemSnap.docs[i].ref);
+                ops++;
+                deletedItems++;
+                if (ops >= 400) {
+                    await batch.commit();
+                    batch = db.batch();
+                    ops = 0;
+                }
+            }
+            if (ops) await batch.commit();
+
+            var catSnap = await db.collection('categories').where('seedTag', '==', SEED_TAG).get();
+            batch = db.batch();
+            ops = 0;
+            for (var c = 0; c < catSnap.docs.length; c++) {
+                batch.delete(catSnap.docs[c].ref);
+                ops++;
+                deletedCats++;
+                if (ops >= 400) {
+                    await batch.commit();
+                    batch = db.batch();
+                    ops = 0;
+                }
+            }
+            if (ops) await batch.commit();
+
+            // Also remove known seed category docs if query index missing
+            for (var k = 0; k < CATALOG.length; k++) {
+                try {
+                    var ref = db.collection('categories').doc(CATALOG[k].id);
+                    var doc = await ref.get();
+                    if (doc.exists && doc.data().seedTag === SEED_TAG) {
+                        await ref.delete();
+                        deletedCats++;
+                    }
+                } catch (e) {}
+            }
+
+            setStatus('Cleared ' + deletedCats + ' categories and ' + deletedItems + ' items.', 'ok');
+        } catch (err) {
+            console.error(err);
+            setStatus('Error: ' + (err && err.message ? err.message : err) +
+                '\nIf Firestore asks for an index, just use Clear again after seed, or delete from Admin.', 'err');
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    seedBtn.addEventListener('click', seedData);
+    clearBtn.addEventListener('click', clearSeedData);
+})();
+    </script>
+</body>
+</html>

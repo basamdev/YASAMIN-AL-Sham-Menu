@@ -3,23 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Shawarma - لوحة التحكم</title>
+    <title>YASAMIN AL-SHAM - لوحة التحكم</title>
     <link rel="manifest" href="manifest.json?v=117">
-    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
-    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/shawarma demeshq-logo.jpg?v=1">
-    <meta name="application-name" content="Shawarma">
+    <link rel="icon" type="image/png" href="assets/yassamin-alsham-logo.png?v=8">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/yassamin-alsham-logo.png?v=8">
+    <meta name="application-name" content="YASAMIN AL-SHAM">
     <meta name="msapplication-TileColor" content="#5C4033">
-    <meta name="msapplication-TileImage" content="assets/shawarma demeshq-logo.jpg?v=1">
+    <meta name="msapplication-TileImage" content="assets/yassamin-alsham-logo.png?v=8">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Shawarma">
+    <meta name="apple-mobile-web-app-title" content="YASAMIN AL-SHAM">
     <meta name="theme-color" content="#3B82F6">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Tajawal:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="css/admin.css?v=118">
+    <link rel="stylesheet" href="css/admin.css?v=122">
     <script>
         (function () {
             try {
@@ -36,10 +35,10 @@
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
         <div class="admin-sidebar" id="adminSidebar">
             <div class="sidebar-header">
-                <div class="sidebar-brand">
-                    <img src="assets/shawarma demeshq-logo.jpg?v=1" alt="Shawarma" class="sidebar-brand-icon" onclick="window.location.href='menu.html'" onerror="fallbackLogo(this)">
-                    <span class="sidebar-brand-text">Shawarma</span>
-                </div>
+                <a class="sidebar-brand" href="menu.html" title="Open menu">
+                    <img src="assets/yassamin-alsham-logo.png?v=8" alt="YASAMIN AL-SHAM" class="sidebar-brand-icon" onerror="fallbackLogo(this)">
+                    <span class="sidebar-brand-text">YASAMIN AL-SHAM</span>
+                </a>
                 <button class="sidebar-close" id="sidebarClose" aria-label="Close menu">✕</button>
             </div>
             <div class="sidebar-nav">
@@ -52,6 +51,9 @@
                 <button class="nav-item admin-nav-btn" data-section="settings">
                     <span class="nav-item-icon">⚙️</span><span data-i18n="settings">Settings</span>
                 </button>
+                <a class="nav-item" href="menu.html" id="adminViewMenuLink">
+                    <span class="nav-item-icon">🌐</span><span data-i18n="viewMenu">View Menu</span>
+                </a>
                 <button class="nav-item admin-nav-btn nav-item--logout" data-section="logout">
                     <span class="nav-item-icon">🚪</span><span data-i18n="logout">Logout</span>
                 </button>
@@ -80,11 +82,11 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="js/firebase.js?v=118"></script>
-    <script src="js/menu-data.js?v=118"></script>
-    <script src="js/app.js?v=118"></script>
-    <script src="js/local-api.js?v=118"></script>
-    <script src="js/admin.js?v=118"></script>
+    <script src="js/firebase.js?v=126"></script>
+    <script src="js/menu-data.js?v=126"></script>
+    <script src="js/app.js?v=126"></script>
+    <script src="js/local-api.js?v=120"></script>
+    <script src="js/admin.js?v=126"></script>
 </body>
 </html>
 

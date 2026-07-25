@@ -25,22 +25,19 @@ function getFirebaseEnvironment() {
 }
 
 function getFirebaseAuthDomain(config) {
-    var host = getHostName();
-    if (!host || host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || /\.local$/i.test(host) || /\.test$/i.test(host)) {
-        return host || 'localhost';
-    }
-    return config && config.authDomain ? config.authDomain : '';
+    // Keep the real Firebase authDomain even on localhost.
+    // Overriding to "localhost" can break Auth session / Firestore writes.
+    return (config && config.authDomain) ? config.authDomain : 'localhost';
 }
 
 function getDefaultFirebaseConfig() {
     return {
-        apiKey: "AIzaSyCPJ5fx88XnG_8xo_hb7y_DnHE3h_QntP0",
-        authDomain: "shawarma-demashq-menu.firebaseapp.com",
-        projectId: "shawarma-demashq-menu",
-        storageBucket: "shawarma-demashq-menu.firebasestorage.app",
-        messagingSenderId: "954186813753",
-        appId: "1:954186813753:web:ef0b07813a9fdeccb118e8",
-        measurementId: "G-HWB8F12K7K"
+        apiKey: "AIzaSyDw-CHpGP8Mbv8LLI4U8RVZWRAIQ-gxZsU",
+        authDomain: "yassaminresturant.firebaseapp.com",
+        projectId: "yassaminresturant",
+        storageBucket: "yassaminresturant.firebasestorage.app",
+        messagingSenderId: "657848212321",
+        appId: "1:657848212321:web:09d32e2b56a0f92bb38320"
     };
 }
 

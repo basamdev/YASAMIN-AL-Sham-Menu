@@ -64,46 +64,56 @@
         );
     }
 
+    function sortCategoriesList(list) {
+        list.sort(function (a, b) {
+            var ao = a && a.data && a.data.order != null ? Number(a.data.order) : NaN;
+            var bo = b && b.data && b.data.order != null ? Number(b.data.order) : NaN;
+            if (!isNaN(ao) && !isNaN(bo) && ao !== bo) return ao - bo;
+            if (!isNaN(ao) && isNaN(bo)) return -1;
+            if (isNaN(ao) && !isNaN(bo)) return 1;
+            return String((a && a.id) || '').localeCompare(String((b && b.id) || ''));
+        });
+        return list;
+    }
+
+    function applyCategoriesSnap(snap, onUpdate) {
+        _categories.length = 0;
+        snap.forEach(function (doc) {
+            _categories.push({ id: doc.id, data: doc.data() });
+        });
+        sortCategoriesList(_categories);
+        onUpdate(_categories.slice());
+    }
+
     function loadCategories(timeoutMs, onUpdate, onError) {
         if (_categoriesUnsub) { _categoriesUnsub(); _categoriesUnsub = null; }
         if (!window.db) { onError(new Error('No DB')); return; }
 
-        // Use shorter timeout for faster loading
+        // Do NOT use orderBy('order') — docs missing `order` are excluded by Firestore.
+        // Load all categories, then sort client-side.
         var isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         var defaultTimeout = isMobile ? 4000 : 2000;
 
         var timer = setTimeout(function () {
-            window.db.collection('categories').orderBy('order', 'asc').get({ source: 'server' })
+            window.db.collection('categories').get({ source: 'server' })
                 .then(function (snap) {
-                    _categories.length = 0;
-                    snap.forEach(function (doc) {
-                        _categories.push({ id: doc.id, data: doc.data() });
-                    });
-                    onUpdate(_categories.slice());
+                    applyCategoriesSnap(snap, onUpdate);
                 })
                 .catch(function () {
-                    window.db.collection('categories').orderBy('order', 'asc').get()
+                    window.db.collection('categories').get()
                         .then(function (snap) {
-                            _categories.length = 0;
-                            snap.forEach(function (doc) {
-                                _categories.push({ id: doc.id, data: doc.data() });
-                            });
-                            onUpdate(_categories.slice());
+                            applyCategoriesSnap(snap, onUpdate);
                         })
                         .catch(onError);
                 });
         }, timeoutMs || defaultTimeout);
 
-        _categoriesUnsub = window.db.collection('categories').orderBy('order', 'asc').onSnapshot(
+        _categoriesUnsub = window.db.collection('categories').onSnapshot(
             function (snap) {
                 if (!snap.metadata.fromCache && snap.size > 0) {
                     clearTimeout(timer);
                 }
-                _categories.length = 0;
-                snap.forEach(function (doc) {
-                    _categories.push({ id: doc.id, data: doc.data() });
-                });
-                onUpdate(_categories.slice());
+                applyCategoriesSnap(snap, onUpdate);
             },
             function (err) {
                 console.warn('[menu-data] categories error:', err.message);

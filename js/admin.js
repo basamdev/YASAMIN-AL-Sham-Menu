@@ -367,10 +367,18 @@ function warmAdminOfflineCache(done) {
         });
         writeCachedMenuItemsFlat(menu);
     }).catch(function () {}));
-    tasks.push(db.collection('categories').orderBy('order', 'asc').get().then(function (snap) {
+    tasks.push(db.collection('categories').get().then(function (snap) {
         var categories = [];
         snap.forEach(function (d) {
             categories.push({ id: d.id, data: d.data() });
+        });
+        categories.sort(function (a, b) {
+            var ao = a.data && a.data.order != null ? Number(a.data.order) : NaN;
+            var bo = b.data && b.data.order != null ? Number(b.data.order) : NaN;
+            if (!isNaN(ao) && !isNaN(bo) && ao !== bo) return ao - bo;
+            if (!isNaN(ao) && isNaN(bo)) return -1;
+            if (isNaN(ao) && !isNaN(bo)) return 1;
+            return String(a.id || '').localeCompare(String(b.id || ''));
         });
         safeSetItem('cachedCategories', JSON.stringify(categories));
     }).catch(function () {}));
@@ -1205,7 +1213,7 @@ function showFirestoreApiDisabledAlert() {
     if (window._firestoreApiDisabledAlerted) return;
     window._firestoreApiDisabledAlerted = true;
     var S = i18n[localStorage.getItem('selectedLang') || 'ku'] || i18n.en;
-    var projectId = (window.firebaseConfig && window.firebaseConfig.projectId) || 'shawarma-demashq-menu';
+    var projectId = (window.firebaseConfig && window.firebaseConfig.projectId) || 'yassaminresturant';
     var url = 'https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=' + encodeURIComponent(projectId);
     alert('⚠️ ' + (S.errorPrefix || 'Error:') + '\n\nCloud Firestore API is disabled for this project.\n\nPlease enable it here:\n' + url + '\n\nAfter enabling, wait a few minutes and refresh this page.');
 }
@@ -1379,7 +1387,7 @@ document.addEventListener('DOMContentLoaded', function () {
     hydrateAdminFromLocalCache();
 
     var LOGO_CANDIDATES = [
-        'assets/shawarma demeshq-logo.jpg',
+        'assets/yassamin-alsham-logo.png',
         'assets/logo.svg'
     ];
     window.fallbackLogo = function (img) {
@@ -2795,6 +2803,22 @@ function wireImageFileInput(fileInputId, targetInputId, previewId) {
     });
 }
 
+function nextCategoryOrder() {
+    var max = -1;
+    readCachedCategories().forEach(function (c) {
+        var o = c && c.data ? Number(c.data.order) : NaN;
+        if (!isNaN(o) && o > max) max = o;
+    });
+    return max + 1;
+}
+
+function sanitizeCategoryDocId(nameEn, nameKu, nameAr) {
+    var base = String(nameEn || nameKu || nameAr || 'category').trim();
+    base = base.replace(/[\/\\#?[\]]/g, '-').replace(/\s+/g, ' ').trim();
+    if (!base) base = 'category-' + Date.now();
+    return base.slice(0, 80);
+}
+
 function saveQuickCategory() {
     var S = i18n[localStorage.getItem('selectedLang') || 'ku'] || i18n.en;
     var nameKu = document.getElementById('quickCategoryNameKu').value.trim();
@@ -2803,6 +2827,16 @@ function saveQuickCategory() {
 
     if (!nameKu || !nameAr || !nameEn) {
         alert(S.fillAll);
+        return;
+    }
+
+    if (!window.db) {
+        alert(S.itemSyncFailed + '\nFirebase not ready.');
+        return;
+    }
+    if (!isAdminAuthenticated()) {
+        alert(S.itemSyncFailed + '\nPlease log in again.');
+        window.location.href = 'login.html';
         return;
     }
 
@@ -2816,6 +2850,7 @@ function saveQuickCategory() {
         name_ar: nameAr,
         name_en: nameEn,
         image: finalImg,
+        order: nextCategoryOrder(),
         created_at: now,
         updated_at: now
     };
@@ -3471,9 +3506,14 @@ function syncCategoriesFromItems() {
             var c = (d.data() || {}).category;
             if (c && c.toLowerCase().trim() !== 'water') names[c] = true;
         });
-        return db.collection('categories').orderBy('order', 'asc').get().then(function (catSnap) {
+        return db.collection('categories').get().then(function (catSnap) {
             var have = {};
-            catSnap.forEach(function (d) { have[d.id] = true; });
+            var maxOrder = -1;
+            catSnap.forEach(function (d) {
+                have[d.id] = true;
+                var o = Number((d.data() || {}).order);
+                if (!isNaN(o) && o > maxOrder) maxOrder = o;
+            });
 
             var batch = db.batch();
             var count = 0;
@@ -3482,9 +3522,11 @@ function syncCategoriesFromItems() {
                 // Use the name as the document id so existing items (which
                 // reference the category by this value) keep matching.
                 var ref = db.collection('categories').doc(name);
+                maxOrder += 1;
                 batch.set(ref, {
                     name_ku: name, name_ar: name, name_en: name,
                     image: '',
+                    order: maxOrder,
                     created_at: firebase.firestore.FieldValue.serverTimestamp(),
                     updated_at: firebase.firestore.FieldValue.serverTimestamp()
                 });
@@ -3513,6 +3555,16 @@ function saveCategory() {
         return;
     }
 
+    if (!window.db) {
+        alert(S.itemSyncFailed + '\nFirebase not ready.');
+        return;
+    }
+    if (!isAdminAuthenticated()) {
+        alert(S.itemSyncFailed + '\nPlease log in again.');
+        window.location.href = 'login.html';
+        return;
+    }
+
     var imgUrl = document.getElementById('categoryImageURL').value.trim();
     var placeholderImg = 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27400%27 height=%27300%27%3E%3Crect fill=%23e0e0e0 width=%27400%27 height=%27300%27/%3E%3Ctext x=%2750%25%27 y=%2750%25%27 font-size=%2724%27 text-anchor=%27middle%27 dy=%27.3em%27 fill=%23999%27%3ENo+Image%3C/text%3E%3C/svg%3E';
     var finalImg = imgUrl || placeholderImg;
@@ -3520,38 +3572,38 @@ function saveCategory() {
     var categoryId = document.getElementById('categoryId').value.trim();
     var isCreate = !categoryId;
     if (isCreate) {
-        categoryId = nameEn || nameKu || nameAr;
+        categoryId = sanitizeCategoryDocId(nameEn, nameKu, nameAr);
     }
+
+    var existing = readCachedCategories().find(function (c) { return c && c.id === categoryId; });
+    var existingOrder = existing && existing.data && existing.data.order;
+    var orderValue = (existingOrder != null && existingOrder !== '' && !isNaN(Number(existingOrder)))
+        ? Number(existingOrder)
+        : nextCategoryOrder();
+
     var now = new Date().toISOString();
     var plainData = {
         name_ku: nameKu,
         name_ar: nameAr,
         name_en: nameEn,
         image: finalImg,
+        order: orderValue,
         updated_at: now
     };
 
     var promise;
     var savedId = categoryId;
-    if (categoryId) {
-        var catRef = db.collection('categories').doc(categoryId);
-        if (isCreate) {
-            plainData.created_at = now;
-        }
-        var writeData = Object.assign({}, plainData, {
-            created_at: firebase.firestore.FieldValue.serverTimestamp(),
-            updated_at: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        promise = catRef.set(writeData, { merge: true });
-    } else {
-        var newRef = db.collection('categories').doc();
-        savedId = newRef.id;
+    var catRef = db.collection('categories').doc(categoryId);
+    if (isCreate) {
         plainData.created_at = now;
-        promise = newRef.set(Object.assign({}, plainData, {
-            created_at: firebase.firestore.FieldValue.serverTimestamp(),
-            updated_at: firebase.firestore.FieldValue.serverTimestamp()
-        }));
     }
+    var writeData = Object.assign({}, plainData, {
+        updated_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    if (isCreate) {
+        writeData.created_at = firebase.firestore.FieldValue.serverTimestamp();
+    }
+    promise = catRef.set(writeData, { merge: true });
 
     applyMenuCloudWrite({
         collection: 'categories',
@@ -4285,8 +4337,8 @@ function buildReceiptPrintHtml(options) {
     '</head>' +
     '<body class="' + langClass + '">' +
         '<div class="receipt">' +
-            '<img class="brand-logo" src="' + escapeReceiptHtml(options.logoUrl || 'assets/shawarma demeshq-logo.jpg') + '" alt="" onerror="this.style.display=\'none\'">' +
-             '<div class="brand-title"><span class="en">Shawarma</span><span class="sep">|</span><span class="ku">Shawarma</span></div>' +
+            '<img class="brand-logo" src="' + escapeReceiptHtml(options.logoUrl || 'assets/yassamin-alsham-logo.png') + '" alt="" onerror="this.style.display=\'none\'">' +
+             '<div class="brand-title"><span class="en">YASAMIN AL-SHAM</span><span class="sep">|</span><span class="ku">مطعـم یاسمین الشام</span></div>' +
             '<div class="brand-tagline">Premium Coffee House</div>' +
             (options.location ? '<div class="brand-location">' + escapeReceiptHtml(options.location) + '</div>' : '') +
             '<hr class="rule">' +
@@ -4407,7 +4459,7 @@ function printReceipt(itemsOverride) {
     var phone = formatReceiptPhone(localStorage.getItem('whatsappPhone') || '9647506454656');
     var location = localStorage.getItem('cafeLocationLabel') || 'بەحرکە-مجەمع';
 
-    var logoUrl = new URL('assets/shawarma demeshq-logo.jpg', window.location.href).href;
+    var logoUrl = new URL('assets/yassamin-alsham-logo.png', window.location.href).href;
 
     var receiptHTML = buildReceiptPrintHtml({
         lang: lang,
@@ -4514,7 +4566,7 @@ function populateTestData() {
     
     if (!confirm('This will add sample menu items for each category. Continue?')) return;
     
-    db.collection('categories').orderBy('order', 'asc').get().then(function (snap) {
+    db.collection('categories').get().then(function (snap) {
         if (snap.empty) {
             alert('No categories found. Please create categories first.');
             return;
@@ -5131,7 +5183,7 @@ function loadSettings() {
                         if (err) {
                             var msg = (err && err.message ? String(err.message) : String(err)).toLowerCase();
                             if (msg.indexOf('permission') !== -1 || msg.indexOf('insufficient') !== -1 || msg.indexOf('denied') !== -1) {
-                                alert('⚠️ Settings saved locally only.\n\nFirestore WRITE was DENIED. Fix:\n1) In Firebase Console → project shawarma-demashq-menu → Firestore → Rules tab, paste the rules and click PUBLISH.\n2) Make sure you are logged in as admin.\n\n(' + (err && err.message ? err.message : err) + ')');
+                                alert('⚠️ Settings saved locally only.\n\nFirestore WRITE was DENIED. Fix:\n1) In Firebase Console → project yassaminresturant → Firestore → Rules tab, paste the rules and click PUBLISH.\n2) Make sure you are logged in as admin.\n\n(' + (err && err.message ? err.message : err) + ')');
                             } else {
                                 alert('⚠️ ' + S.settingsSaved + '\n\nCloud sync failed: ' + (err && err.message ? err.message : err) + '\n\nChanges saved locally only.');
                             }
