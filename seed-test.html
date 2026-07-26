@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seed Test Menu — YASAMIN AL-SHAM</title>
+    <title>Add Paper Menu — YASAMIN AL-SHAM</title>
     <link rel="icon" type="image/png" href="assets/icon-192.png?v=16">
     <style>
         :root {
@@ -27,7 +27,7 @@
             padding: 24px;
         }
         .card {
-            width: min(520px, 100%);
+            width: min(560px, 100%);
             background: var(--card);
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 16px;
@@ -35,11 +35,13 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.45);
         }
         .logo {
-            width: 72px;
-            height: auto;
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            object-fit: contain;
             display: block;
             margin: 0 auto 14px;
-            filter: drop-shadow(0 8px 20px rgba(194,24,7,0.35));
+            filter: drop-shadow(0 8px 28px rgba(194,24,7,.45));
         }
         h1 {
             margin: 0 0 8px;
@@ -47,12 +49,23 @@
             text-align: center;
         }
         p {
-            margin: 0 0 20px;
+            margin: 0 0 12px;
             color: var(--muted);
             font-size: 0.92rem;
             line-height: 1.45;
             text-align: center;
         }
+        .summary {
+            margin: 0 0 18px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #ddd;
+            font-size: 0.86rem;
+            line-height: 1.5;
+        }
+        .summary strong { color: #fff; }
         .auth {
             text-align: center;
             font-size: 0.85rem;
@@ -109,15 +122,22 @@
 </head>
 <body>
     <div class="card">
-        <img class="logo" src="assets/yassamin-logo-badge.png?v=16" alt="YASAMIN AL-SHAM" style="width:88px;height:88px;border-radius:50%;object-fit:contain;filter:drop-shadow(0 8px 28px rgba(194,24,7,.45));">
-        <h1>Seed Test Menu</h1>
+        <img class="logo" src="assets/yassamin-logo-badge.png?v=16" alt="YASAMIN AL-SHAM">
+        <h1>Add Paper Menu</h1>
         <p>
-            One click adds many restaurant categories and menu items to Firebase
-            so you can test sticky category scrolling.
+            One click adds only your paper menu (KU / AR / EN + prices + images),
+            and deletes any extra categories/items that are not on the paper.
         </p>
+        <div class="summary">
+            <strong>Keep only:</strong> 4 categories · 37 items<br>
+            Order: 1 Western Meals → 2 Western Sandwiches → 3 Manakish → 4 Appetizers<br>
+            <strong>Extra items/categories will be deleted.</strong>
+        </div>
         <div class="auth" id="authState">Checking login…</div>
-        <button type="button" id="seedBtn" disabled>Add test categories & items</button>
-        <button type="button" class="secondary" id="clearBtn" disabled>Clear seeded test data</button>
+        <button type="button" id="seedBtn" disabled>Replace menu with paper only</button>
+        <button type="button" class="secondary" id="sortBtn" disabled>Apply category order 1→4 only</button>
+        <button type="button" class="secondary" id="checkBtn" disabled>Check Firebase ↔ Admin match</button>
+        <button type="button" class="secondary" id="clearBtn" disabled>Delete ALL menu data</button>
         <div id="status"></div>
         <div class="links">
             <a href="login.html">Admin login</a>
@@ -135,204 +155,92 @@
     var authEl = document.getElementById('authState');
     var statusEl = document.getElementById('status');
     var seedBtn = document.getElementById('seedBtn');
+    var sortBtn = document.getElementById('sortBtn');
+    var checkBtn = document.getElementById('checkBtn');
     var clearBtn = document.getElementById('clearBtn');
     var currentUser = null;
 
-    var SEED_TAG = 'yassamin_seed_v1';
+    var SEED_TAG = 'yassamin_paper_menu_v1';
+    var OLD_SEED_TAGS = ['yassamin_seed_v1', 'yassamin_paper_menu_v1'];
 
+    // Prices from paper (1.000 => 1000 IQD). Names: KU / AR / EN.
+    // Category order (user): 1 Western Meals → 2 Western Sandwiches → 3 Manakish → 4 Appetizers
     var CATALOG = [
         {
-            id: 'appetizers',
+            id: 'western-meals',
             order: 1,
-            name_ku: 'مقبلات',
+            name_ku: 'ژەمەکانی ڕۆژئاوایی',
+            name_ar: 'وجبات غربي',
+            name_en: 'Western Meals',
+            image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400',
+            items: [
+                { id: 'wm-tawook', name_ku: 'ژەمی شیش طاووق', name_ar: 'وجبة شيش طاووق', name_en: 'Shish Tawook Meal', price: 7000, image: 'https://images.unsplash.com/photo-1527477396000-e27170b503a0?w=600' },
+                { id: 'wm-crispy', name_ku: 'ژەمی كریسبي', name_ar: 'وجبة كريسبي', name_en: 'Crispy Meal', price: 7000, image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=600' },
+                { id: 'wm-fajita', name_ku: 'ژەمی فاهیتای مریشک', name_ar: 'وجبة فاهيتا دجاج', name_en: 'Chicken Fajita Meal', price: 7000, image: 'https://images.unsplash.com/photo-1561651823-34feb02250e4?w=600' },
+                { id: 'wm-escalope', name_ku: 'ژەمی سكاڵۆپ', name_ar: 'وجبة اسكالوب', name_en: 'Escalope Meal', price: 7000, image: 'https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=600' },
+                { id: 'wm-francisco', name_ku: 'ژەمی فرانسیسكۆ', name_ar: 'وجبة فرانسيسكو', name_en: 'Francisco Meal', price: 7000, image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600' }
+            ]
+        },
+        {
+            id: 'western-sandwiches',
+            order: 2,
+            name_ku: 'لەفەکانی ڕۆژئاوایی',
+            name_ar: 'سندويش غربي',
+            name_en: 'Western Sandwiches',
+            image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=400',
+            items: [
+                { id: 'ws-tawook', name_ku: 'شیش طاووق', name_ar: 'شيش طاووق', name_en: 'Shish Tawook', price: 3500, image: 'https://images.unsplash.com/photo-1527477396000-e27170b503a0?w=600' },
+                { id: 'ws-crispy', name_ku: 'كریسبي', name_ar: 'كريسي', name_en: 'Crispy Chicken', price: 3500, image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=600' },
+                { id: 'ws-fajita', name_ku: 'فاهیتای مریشک', name_ar: 'فاهيتا دجاج', name_en: 'Chicken Fajita', price: 3500, image: 'https://images.unsplash.com/photo-1561651823-34feb02250e4?w=600' },
+                { id: 'ws-escalope', name_ku: 'سكاڵۆپ', name_ar: 'اسكالوب', name_en: 'Chicken Escalope', price: 3500, image: 'https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=600' },
+                { id: 'ws-francisco', name_ku: 'فرانسیسكۆ', name_ar: 'فرانسيسكو', name_en: 'Francisco', price: 3500, image: 'https://images.unsplash.com/photo-1553909489-cd47e0907980?w=600' },
+                { id: 'ws-zinger', name_ku: 'زنجیر', name_ar: 'زنجر', name_en: 'Zinger', price: 3500, image: 'https://images.unsplash.com/photo-1562967914-608f82629710?w=600' },
+                { id: 'ws-chicken-burger', name_ku: 'بەرگەری مریشک', name_ar: 'برغر دجاج', name_en: 'Chicken Burger', price: 2500, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600' },
+                { id: 'ws-chicken-burger-cheese', name_ku: 'بەرگەری مریشک بە پەنیر', name_ar: 'برغر دجاج بالجبنة', name_en: 'Chicken Burger with Cheese', price: 3000, image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=600' },
+                { id: 'ws-beef-burger', name_ku: 'بەرگەری گۆشت', name_ar: 'برغر لحم', name_en: 'Beef Burger', price: 2500, image: 'https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=600' },
+                { id: 'ws-beef-burger-cheese', name_ku: 'بەرگەری گۆشت بە پەنیر', name_ar: 'برغر لحم بالجبنة', name_en: 'Beef Burger with Cheese', price: 3000, image: 'https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?w=600' },
+                { id: 'ws-yasamin-burger', name_ku: 'بەرگەری یاسمین الشام', name_ar: 'برغر ياسمين الشام', name_en: 'Yasamin Al-Sham Burger', price: 3500, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600' }
+            ]
+        },
+        {
+            id: 'manaqeesh',
+            order: 3,
+            name_ku: 'كولێرەکان',
+            name_ar: 'مناقيش',
+            name_en: 'Manakish',
+            image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400',
+            items: [
+                { id: 'manaqeesh-zaatar', name_ku: 'زەعتەر', name_ar: 'زعتر', name_en: 'Zaatar', price: 1000, image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600' },
+                { id: 'manaqeesh-cheese', name_ku: 'پەنیر', name_ar: 'جبنة', name_en: 'Cheese', price: 1250, image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600' },
+                { id: 'manaqeesh-double-cheese', name_ku: 'پەنیر دبل', name_ar: 'جبنة دبل', name_en: 'Double Cheese', price: 2500, image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600' },
+                { id: 'manaqeesh-kashkaval', name_ku: 'قەشەوان', name_ar: 'قشقوان', name_en: 'Kashkaval', price: 1250, image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600' },
+                { id: 'manaqeesh-muhammara', name_ku: 'موحەمەرە', name_ar: 'محمرة', name_en: 'Muhammara', price: 1250, image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=600' },
+                { id: 'manaqeesh-zaatar-kashkaval', name_ku: 'زەعتەر و قەشەوان', name_ar: 'زعتر وقشقوان', name_en: 'Zaatar & Kashkaval', price: 1250, image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600' },
+                { id: 'manaqeesh-muhammara-kashkaval', name_ku: 'موحەمەرە و قەشەوان', name_ar: 'محمرة وقشقوان', name_en: 'Muhammara & Kashkaval', price: 1250, image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600' },
+                { id: 'manaqeesh-lahm', name_ku: 'لەحم عەجین', name_ar: 'لحم بعجين', name_en: 'Lahm bi Ajeen', price: 1250, image: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600' },
+                { id: 'manaqeesh-lahm-double', name_ku: 'لەحم عەجین دبل', name_ar: 'لحم بعجين دبل', name_en: 'Double Lahm bi Ajeen', price: 2500, image: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600' },
+                { id: 'manaqeesh-lahm-cheese-s', name_ku: 'لەحم عەجین و پەنیر بچووک', name_ar: 'لحم بعجين بالجبنة صغير', name_en: 'Lahm bi Ajeen with Cheese (Small)', price: 1500, image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600' },
+                { id: 'manaqeesh-lahm-cheese-l', name_ku: 'لەحم عەجین و پەنیر گەورە', name_ar: 'لحم بعجين بالجبنة كبير', name_en: 'Lahm bi Ajeen with Cheese (Large)', price: 3000, image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600' }
+            ]
+        },
+        {
+            id: 'appetizers',
+            order: 4,
+            name_ku: 'موقەبيلات',
             name_ar: 'مقبلات',
             name_en: 'Appetizers',
-            image: 'https://images.unsplash.com/photo-1541529086526-db283c563270?w=200',
+            image: 'https://images.unsplash.com/photo-1541529086526-db283c563270?w=400',
             items: [
-                ['حمص', 'حمص', 'Hummus', 2500, 'https://images.unsplash.com/photo-1577906096429-f73c2c72dbaa?w=400'],
-                ['متبل', 'متبل', 'Mutabal', 2500, 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400'],
-                ['فتوش', 'فتوش', 'Fattoush', 3000, 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400'],
-                ['تبولة', 'تبولة', 'Tabbouleh', 3000, 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400'],
-                ['فتة حمص', 'فتة حمص', 'Fatteh Hummus', 4000, 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400']
-            ]
-        },
-        {
-            id: 'shawarma',
-            order: 2,
-            name_ku: 'شاورما',
-            name_ar: 'شاورما',
-            name_en: 'Shawarma',
-            image: 'https://images.unsplash.com/photo-1529006557810-274b0b6c0270?w=200',
-            items: [
-                ['شاورما دجاج', 'شاورما دجاج', 'Chicken Shawarma', 4500, 'https://images.unsplash.com/photo-1633324370328-5b41da8caba1?w=400'],
-                ['شاورما لحم', 'شاورما لحم', 'Meat Shawarma', 5500, 'https://images.unsplash.com/photo-1561651823-34feb02250e4?w=400'],
-                ['صينية شاورما', 'صينية شاورما', 'Shawarma Plate', 8000, 'https://images.unsplash.com/photo-1529006557810-274b0b6c0270?w=400'],
-                ['شاورما مخلوط', 'شاورما مشكل', 'Mixed Shawarma', 6000, 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=400']
-            ]
-        },
-        {
-            id: 'grills',
-            order: 3,
-            name_ku: 'مشاوي',
-            name_ar: 'مشاوي',
-            name_en: 'Grills',
-            image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200',
-            items: [
-                ['كباب مشوي', 'كباب مشوي', 'Grilled Kebab', 7000, 'https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=400'],
-                ['شيش طاووق', 'شيش طاووق', 'Shish Tawook', 6500, 'https://images.unsplash.com/photo-1527477396000-e27170b503a0?w=400'],
-                ['كفتة', 'كفتة', 'Kofta', 6500, 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400'],
-                ['مشكل مشاوي', 'مشكل مشاوي', 'Mixed Grill', 12000, 'https://images.unsplash.com/photo-1544025162-d76690232d66?w=400'],
-                ['ريش غنم', 'ريش غنم', 'Lamb Chops', 14000, 'https://images.unsplash.com/photo-1432139509613-5c4255815697?w=400']
-            ]
-        },
-        {
-            id: 'broasted',
-            order: 4,
-            name_ku: 'بروستد',
-            name_ar: 'بروستد',
-            name_en: 'Broasted',
-            image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=200',
-            items: [
-                ['بروستد دجاج نصف', 'بروستد نصف', 'Half Broasted', 7000, 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400'],
-                ['بروستد كامل', 'بروستد كامل', 'Full Broasted', 12000, 'https://images.unsplash.com/photo-1562967914-608f82629710?w=400'],
-                ['قطع بروستد', 'قطع بروستد', 'Broasted Pieces', 5000, 'https://images.unsplash.com/photo-1562967916-eb82221dfb92?w=400']
-            ]
-        },
-        {
-            id: 'sandwiches',
-            order: 5,
-            name_ku: 'سەندویچ',
-            name_ar: 'سندويش',
-            name_en: 'Sandwiches',
-            image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=200',
-            items: [
-                ['سندويش فلافل', 'سندويش فلافل', 'Falafel Sandwich', 2500, 'https://images.unsplash.com/photo-1593001872095-7d5b90c665ea?w=400'],
-                ['سندويش شاورما', 'سندويش شاورما', 'Shawarma Sandwich', 3500, 'https://images.unsplash.com/photo-1633324370328-5b41da8caba1?w=400'],
-                ['سندويش كباب', 'سندويش كباب', 'Kebab Sandwich', 4000, 'https://images.unsplash.com/photo-1553909489-cd47e0907980?w=400'],
-                ['كرسبي سندويش', 'سندويش كرسبي', 'Crispy Sandwich', 4000, 'https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=400']
-            ]
-        },
-        {
-            id: 'meals',
-            order: 6,
-            name_ku: 'ژەمەکان',
-            name_ar: 'وجبات',
-            name_en: 'Meals',
-            image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=200',
-            items: [
-                ['وجبة عائلة', 'وجبة عائلية', 'Family Meal', 25000, 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400'],
-                ['وجبة شخص واحد', 'وجبة فردية', 'Single Meal', 9000, 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400'],
-                ['وجبة أرز', 'وجبة أرز', 'Rice Meal', 7000, 'https://images.unsplash.com/photo-1516684735270-3b4e8f6f9d96?w=400'],
-                ['منسف', 'منسف', 'Mansaf', 11000, 'https://images.unsplash.com/photo-1604908177522-347f57ac1f4f?w=400']
-            ]
-        },
-        {
-            id: 'pizza',
-            order: 7,
-            name_ku: 'پیتزا',
-            name_ar: 'بيتزا',
-            name_en: 'Pizza',
-            image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200',
-            items: [
-                ['بيتزا مارغريتا', 'بيتزا مارغريتا', 'Margherita Pizza', 7000, 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400'],
-                ['بيتزا دجاج', 'بيتزا دجاج', 'Chicken Pizza', 8500, 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400'],
-                ['بيتزا مشكل', 'بيتزا مشكل', 'Mixed Pizza', 9000, 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400']
-            ]
-        },
-        {
-            id: 'salads',
-            order: 8,
-            name_ku: 'زەڵاتە',
-            name_ar: 'سلطات',
-            name_en: 'Salads',
-            image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200',
-            items: [
-                ['سلطة سيزر', 'سلطة سيزر', 'Caesar Salad', 4500, 'https://images.unsplash.com/photo-1546793665-c74683f339c1?w=400'],
-                ['سلطة يونانية', 'سلطة يونانية', 'Greek Salad', 4000, 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400'],
-                ['سلطة خضراء', 'سلطة خضراء', 'Green Salad', 3000, 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400']
-            ]
-        },
-        {
-            id: 'sides',
-            order: 9,
-            name_ku: 'زیادەکان',
-            name_ar: 'إضافات',
-            name_en: 'Sides',
-            image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=200',
-            items: [
-                ['بطاطا مقلية', 'بطاطا مقلية', 'French Fries', 2000, 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400'],
-                ['حلقات بصل', 'حلقات بصل', 'Onion Rings', 2500, 'https://images.unsplash.com/photo-1639024471283-03518883512d?w=400'],
-                ['ثومية', 'ثومية', 'Garlic Sauce', 1000, 'https://images.unsplash.com/photo-1472476443507-c7a5948772fc?w=400'],
-                ['خبز عربي', 'خبز عربي', 'Arabic Bread', 500, 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400']
-            ]
-        },
-        {
-            id: 'drinks',
-            order: 10,
-            name_ku: 'خواردنەوە',
-            name_ar: 'مشروبات',
-            name_en: 'Soft Drinks',
-            image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=200',
-            items: [
-                ['كولا', 'كولا', 'Cola', 1000, 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=400'],
-                ['سبرايت', 'سبرايت', 'Sprite', 1000, 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=400'],
-                ['ماء', 'ماء', 'Water', 500, 'https://images.unsplash.com/photo-1548832335-cf2207f68b5e?w=400'],
-                ['عصير علب', 'عصير علب', 'Canned Juice', 1500, 'https://images.unsplash.com/photo-1622597467836-f3285f2131b8?w=400']
-            ]
-        },
-        {
-            id: 'juices',
-            order: 11,
-            name_ku: 'عەصیر',
-            name_ar: 'عصائر طازجة',
-            name_en: 'Fresh Juices',
-            image: 'https://images.unsplash.com/photo-1622597467836-f3285f2131b8?w=200',
-            items: [
-                ['عصير برتقال', 'عصير برتقال', 'Orange Juice', 3000, 'https://images.unsplash.com/photo-1613478223719-2ab802602423?w=400'],
-                ['عصير ليمون', 'عصير ليمون نعنع', 'Lemon Mint', 3000, 'https://images.unsplash.com/photo-1622597467836-f3285f2131b8?w=400'],
-                ['عصير فراولة', 'عصير فراولة', 'Strawberry Juice', 3500, 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400'],
-                ['كوكتيل فواكه', 'كوكتيل فواكه', 'Fruit Cocktail', 4000, 'https://images.unsplash.com/photo-1546173159-315724a31696?w=400']
-            ]
-        },
-        {
-            id: 'hot-drinks',
-            order: 12,
-            name_ku: 'گەرمی',
-            name_ar: 'مشروبات ساخنة',
-            name_en: 'Hot Drinks',
-            image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200',
-            items: [
-                ['شاي', 'شاي', 'Tea', 1000, 'https://images.unsplash.com/photo-1556881286-fc6915169721?w=400'],
-                ['قهوة عربية', 'قهوة عربية', 'Arabic Coffee', 1500, 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400'],
-                ['نسكافيه', 'نسكافيه', 'Nescafe', 2000, 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400'],
-                ['هوت شوكليت', 'هوت شوكليت', 'Hot Chocolate', 2500, 'https://images.unsplash.com/photo-1542990253-0d0f5be5f0ed?w=400']
-            ]
-        },
-        {
-            id: 'desserts',
-            order: 13,
-            name_ku: 'شیرینی',
-            name_ar: 'حلويات',
-            name_en: 'Desserts',
-            image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=200',
-            items: [
-                ['بقلاوة', 'بقلاوة', 'Baklava', 4000, 'https://images.unsplash.com/photo-1519676867240-f03562e64548?w=400'],
-                ['كنافة', 'كنافة', 'Kunafa', 5000, 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400'],
-                ['آيس كريم', 'آيس كريم', 'Ice Cream', 3000, 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400'],
-                ['تشيز كيك', 'تشيز كيك', 'Cheesecake', 4500, 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=400']
-            ]
-        },
-        {
-            id: 'kids',
-            order: 14,
-            name_ku: 'منداڵان',
-            name_ar: 'وجبات أطفال',
-            name_en: 'Kids Menu',
-            image: 'https://images.unsplash.com/photo-1562967914-608f82629710?w=200',
-            items: [
-                ['وجبة أطفال دجاج', 'وجبة أطفال دجاج', 'Kids Chicken Meal', 5000, 'https://images.unsplash.com/photo-1562967914-608f82629710?w=400'],
-                ['نغتس', 'ناغتس', 'Nuggets', 4000, 'https://images.unsplash.com/photo-1562967916-eb82221dfb92?w=400'],
-                ['ميني بيتزا', 'ميني بيتزا', 'Mini Pizza', 4500, 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400']
+                { id: 'app-hummus', name_ku: 'حومس', name_ar: 'حمص', name_en: 'Hummus', price: 1500, image: 'https://images.unsplash.com/photo-1577906096429-f73c2c72dbaa?w=600' },
+                { id: 'app-mutabbal', name_ku: 'متەبەل', name_ar: 'متبل', name_en: 'Mutabbal', price: 1500, image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=600' },
+                { id: 'app-tabbouleh', name_ku: 'تەبوولە', name_ar: 'تبولة', name_en: 'Tabbouleh', price: 3000, image: 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=600' },
+                { id: 'app-fattoush', name_ku: 'فتووش', name_ar: 'فتوش', name_en: 'Fattoush', price: 3000, image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600' },
+                { id: 'app-eggplant', name_ku: 'باینجانیە', name_ar: 'باذنجانية', name_en: 'Eggplant Salad', price: 1500, image: 'https://images.unsplash.com/photo-1604908177522-347f57ac1f4f?w=600' },
+                { id: 'app-arugula', name_ku: 'جەرجیر', name_ar: 'جرجير', name_en: 'Arugula Salad', price: 3000, image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600' },
+                { id: 'app-oriental', name_ku: 'سەڵتەی ڕۆژهەڵاتی', name_ar: 'سلطة شرقية', name_en: 'Oriental Salad', price: 3000, image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600' },
+                { id: 'app-mixed-large', name_ku: 'موقەبيلاتی گەورە', name_ar: 'مقبلات مشكل كبير', name_en: 'Large Mixed Appetizers', price: 3000, image: 'https://images.unsplash.com/photo-1541529086526-db283c563270?w=600' },
+                { id: 'app-mixed-small', name_ku: 'موقەبيلاتی بچووک', name_ar: 'مقبلات مشكل صغير', name_en: 'Small Mixed Appetizers', price: 2000, image: 'https://images.unsplash.com/photo-1541529086526-db283c563270?w=600' },
+                { id: 'app-fries', name_ku: 'قاپەک پەتاتە', name_ar: 'صحن بطاطا', name_en: 'French Fries', price: 1250, image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=600' }
             ]
         }
     ];
@@ -344,7 +252,13 @@
 
     function setBusy(busy) {
         seedBtn.disabled = busy || !currentUser;
+        if (sortBtn) sortBtn.disabled = busy || !currentUser;
+        if (checkBtn) checkBtn.disabled = busy || !currentUser;
         clearBtn.disabled = busy || !currentUser;
+    }
+
+    function countItems() {
+        return CATALOG.reduce(function (sum, cat) { return sum + cat.items.length; }, 0);
     }
 
     auth.onAuthStateChanged(function (user) {
@@ -353,67 +267,51 @@
             authEl.textContent = 'Logged in as ' + (user.email || user.uid);
             authEl.className = 'auth ok';
             seedBtn.disabled = false;
+            if (sortBtn) sortBtn.disabled = false;
+            if (checkBtn) checkBtn.disabled = false;
             clearBtn.disabled = false;
         } else {
             authEl.textContent = 'Not logged in — open Admin login first, then come back.';
             authEl.className = 'auth bad';
             seedBtn.disabled = true;
+            if (sortBtn) sortBtn.disabled = true;
+            if (checkBtn) checkBtn.disabled = true;
             clearBtn.disabled = true;
         }
     });
 
-    async function seedData() {
+    async function applyCategoryOrderOnly() {
         if (!currentUser) {
             setStatus('Please login first.', 'err');
             return;
         }
-        if (!confirm('Add ' + CATALOG.length + ' categories and many menu items for testing?')) return;
-
         setBusy(true);
-        setStatus('Seeding… please wait');
-
+        setStatus('Updating category order…');
         try {
-            var catCount = 0;
-            var itemCount = 0;
-            var email = currentUser.email || '';
-
             for (var i = 0; i < CATALOG.length; i++) {
                 var cat = CATALOG[i];
-                setStatus('Category ' + (i + 1) + '/' + CATALOG.length + ': ' + cat.name_en);
-
                 await db.collection('categories').doc(cat.id).set({
+                    order: cat.order,
                     name_ku: cat.name_ku,
                     name_ar: cat.name_ar,
                     name_en: cat.name_en,
-                    order: cat.order,
-                    image: cat.image || '',
-                    seedTag: SEED_TAG,
-                    createdBy: email
+                    seedTag: SEED_TAG
                 }, { merge: true });
-                catCount++;
 
                 for (var j = 0; j < cat.items.length; j++) {
-                    var it = cat.items[j];
-                    await db.collection('menuItems').add({
-                        name_ku: it[0],
-                        name_ar: it[1],
-                        name_en: it[2],
-                        description_ku: it[2] + ' — تاقیکردنەوە',
-                        description_ar: it[2] + ' — للاختبار',
-                        description_en: it[2] + ' — test item',
-                        price: it[3],
-                        image: it[4],
-                        category: cat.id,
-                        available: true,
-                        seedTag: SEED_TAG,
-                        createdBy: email,
-                        order: j + 1
-                    });
-                    itemCount++;
+                    await db.collection('menuItems').doc(cat.items[j].id).set({
+                        order: j + 1,
+                        category: cat.id
+                    }, { merge: true });
                 }
             }
-
-            setStatus('Done! Added/updated ' + catCount + ' categories and ' + itemCount + ' items.\nOpen the menu to test sticky categories.', 'ok');
+            clearLocalMenuCaches();
+            setStatus(
+                'Order updated!\n' +
+                '1 Western Meals\n2 Western Sandwiches\n3 Manakish\n4 Appetizers\n\n' +
+                'Hard refresh menu.html (Ctrl+F5)',
+                'ok'
+            );
         } catch (err) {
             console.error(err);
             setStatus('Error: ' + (err && err.message ? err.message : err), 'err');
@@ -422,73 +320,236 @@
         }
     }
 
+    function paperIdSets() {
+        var catIds = {};
+        var itemIds = {};
+        CATALOG.forEach(function (cat) {
+            catIds[cat.id] = true;
+            cat.items.forEach(function (it) { itemIds[it.id] = true; });
+        });
+        return { catIds: catIds, itemIds: itemIds };
+    }
+
+    function clearLocalMenuCaches() {
+        [
+            'cachedCategories',
+            'cachedMenuItems',
+            'cachedMenuCategoryNames',
+            'cachedCashierItems',
+            'cachedMenuOffers'
+        ].forEach(function (key) {
+            try { localStorage.removeItem(key); } catch (e) {}
+        });
+    }
+
+    async function deleteAllInCollection(collectionName, onProgress) {
+        var deleted = 0;
+        var snap = await db.collection(collectionName).get();
+        for (var i = 0; i < snap.docs.length; i++) {
+            await snap.docs[i].ref.delete();
+            deleted++;
+            if (typeof onProgress === 'function' && deleted % 5 === 0) {
+                onProgress(deleted, snap.docs.length);
+            }
+        }
+        return deleted;
+    }
+
+    async function seedData() {
+        if (!currentUser) {
+            setStatus('Please login first.', 'err');
+            return;
+        }
+        if (!confirm(
+            'Replace menu with PAPER MENU only?\n\n' +
+            '1) Delete ALL current categories & items\n' +
+            '2) Add only paper menu:\n' +
+            '   ' + CATALOG.length + ' categories + ' + countItems() + ' items\n\n' +
+            'Order: Western Meals → Western Sandwiches → Manakish → Appetizers'
+        )) return;
+
+        setBusy(true);
+
+        try {
+            var email = currentUser.email || '';
+
+            // 1) Wipe EVERYTHING first (stops old extras / virtual categories)
+            setStatus('Step 1/3 — Deleting ALL old items…');
+            var deletedItems = await deleteAllInCollection('menuItems', function (n, total) {
+                setStatus('Step 1/3 — Deleting items… ' + n + '/' + total);
+            });
+
+            setStatus('Step 2/3 — Deleting ALL old categories…');
+            var deletedCats = await deleteAllInCollection('categories', function (n, total) {
+                setStatus('Step 2/3 — Deleting categories… ' + n + '/' + total);
+            });
+
+            clearLocalMenuCaches();
+
+            // 2) Add ONLY paper menu
+            var catCount = 0;
+            var itemCount = 0;
+            for (var i = 0; i < CATALOG.length; i++) {
+                var cat = CATALOG[i];
+                setStatus('Step 3/3 — Adding paper category ' + (i + 1) + '/' + CATALOG.length + ': ' + cat.name_en);
+
+                await db.collection('categories').doc(cat.id).set({
+                    name_ku: cat.name_ku,
+                    name_ar: cat.name_ar,
+                    name_en: cat.name_en,
+                    order: cat.order,
+                    image: cat.image || '',
+                    seedTag: SEED_TAG,
+                    createdBy: email,
+                    updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                catCount++;
+
+                for (var j = 0; j < cat.items.length; j++) {
+                    var it = cat.items[j];
+                    await db.collection('menuItems').doc(it.id).set({
+                        name_ku: it.name_ku,
+                        name_ar: it.name_ar,
+                        name_en: it.name_en,
+                        description_ku: '',
+                        description_ar: '',
+                        description_en: '',
+                        price: it.price,
+                        image: it.image || '',
+                        category: cat.id,
+                        available: true,
+                        seedTag: SEED_TAG,
+                        createdBy: email,
+                        order: j + 1,
+                        updated_at: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    itemCount++;
+                }
+            }
+
+            clearLocalMenuCaches();
+
+            setStatus('Checking Firebase…');
+            var check = await verifyPaperMenuInFirebase();
+            setStatus(
+                'Done — paper menu saved in Firebase!\n' +
+                'Deleted old: ' + deletedCats + ' categories + ' + deletedItems + ' items\n' +
+                'Added: ' + catCount + ' categories + ' + itemCount + ' items\n\n' +
+                check.message + '\n\n' +
+                'Open Admin → Items / Categories (Ctrl+F5)',
+                check.ok ? 'ok' : 'err'
+            );
+        } catch (err) {
+            console.error(err);
+            setStatus('Error: ' + (err && err.message ? err.message : err), 'err');
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    async function verifyPaperMenuInFirebase() {
+        var expectedCats = {};
+        var expectedItems = {};
+        CATALOG.forEach(function (cat) {
+            expectedCats[cat.id] = cat;
+            cat.items.forEach(function (it) { expectedItems[it.id] = it; });
+        });
+
+        var catSnap = await db.collection('categories').get({ source: 'server' });
+        var itemSnap = await db.collection('menuItems').get({ source: 'server' });
+
+        var cats = [];
+        catSnap.forEach(function (d) { cats.push({ id: d.id, data: d.data() || {} }); });
+        cats.sort(function (a, b) {
+            return (Number(a.data.order) || 999) - (Number(b.data.order) || 999);
+        });
+
+        var items = [];
+        itemSnap.forEach(function (d) { items.push({ id: d.id, data: d.data() || {} }); });
+
+        var missingCats = Object.keys(expectedCats).filter(function (id) {
+            return !cats.some(function (c) { return c.id === id; });
+        });
+        var extraCats = cats.filter(function (c) { return !expectedCats[c.id]; }).map(function (c) { return c.id; });
+        var missingItems = Object.keys(expectedItems).filter(function (id) {
+            return !items.some(function (it) { return it.id === id; });
+        });
+        var extraItems = items.filter(function (it) { return !expectedItems[it.id]; }).map(function (it) { return it.id; });
+
+        var lines = [];
+        lines.push('Firebase check:');
+        lines.push('Categories in Firebase: ' + cats.length + ' (expect ' + Object.keys(expectedCats).length + ')');
+        cats.forEach(function (c) {
+            lines.push('  ' + (c.data.order || '?') + '. ' + (c.data.name_en || c.id) + ' [' + c.id + ']');
+        });
+        lines.push('Items in Firebase: ' + items.length + ' (expect ' + Object.keys(expectedItems).length + ')');
+
+        var ok = missingCats.length === 0 && extraCats.length === 0 &&
+            missingItems.length === 0 && extraItems.length === 0;
+
+        if (missingCats.length) lines.push('Missing categories: ' + missingCats.join(', '));
+        if (extraCats.length) lines.push('Extra categories: ' + extraCats.join(', '));
+        if (missingItems.length) lines.push('Missing items: ' + missingItems.length);
+        if (extraItems.length) lines.push('Extra items: ' + extraItems.length);
+        if (ok) lines.push('OK — same paper menu will show in Admin Items & Categories.');
+
+        return { ok: ok, message: lines.join('\n') };
+    }
+
     async function clearSeedData() {
         if (!currentUser) {
             setStatus('Please login first.', 'err');
             return;
         }
-        if (!confirm('Delete ONLY seeded test categories and items?')) return;
+        if (!confirm('Delete ALL categories and menu items from Firebase?\nThis cannot be undone.')) return;
 
         setBusy(true);
-        setStatus('Clearing seeded data…');
+        setStatus('Deleting all menu data…');
 
         try {
             var deletedItems = 0;
             var deletedCats = 0;
 
-            var itemSnap = await db.collection('menuItems').where('seedTag', '==', SEED_TAG).get();
-            var batch = db.batch();
-            var ops = 0;
-            for (var i = 0; i < itemSnap.docs.length; i++) {
-                batch.delete(itemSnap.docs[i].ref);
-                ops++;
+            var allItems = await db.collection('menuItems').get();
+            for (var i = 0; i < allItems.docs.length; i++) {
+                await allItems.docs[i].ref.delete();
                 deletedItems++;
-                if (ops >= 400) {
-                    await batch.commit();
-                    batch = db.batch();
-                    ops = 0;
-                }
             }
-            if (ops) await batch.commit();
 
-            var catSnap = await db.collection('categories').where('seedTag', '==', SEED_TAG).get();
-            batch = db.batch();
-            ops = 0;
-            for (var c = 0; c < catSnap.docs.length; c++) {
-                batch.delete(catSnap.docs[c].ref);
-                ops++;
+            var allCats = await db.collection('categories').get();
+            for (var c = 0; c < allCats.docs.length; c++) {
+                await allCats.docs[c].ref.delete();
                 deletedCats++;
-                if (ops >= 400) {
-                    await batch.commit();
-                    batch = db.batch();
-                    ops = 0;
-                }
-            }
-            if (ops) await batch.commit();
-
-            // Also remove known seed category docs if query index missing
-            for (var k = 0; k < CATALOG.length; k++) {
-                try {
-                    var ref = db.collection('categories').doc(CATALOG[k].id);
-                    var doc = await ref.get();
-                    if (doc.exists && doc.data().seedTag === SEED_TAG) {
-                        await ref.delete();
-                        deletedCats++;
-                    }
-                } catch (e) {}
             }
 
-            setStatus('Cleared ' + deletedCats + ' categories and ' + deletedItems + ' items.', 'ok');
+            setStatus('Deleted ' + deletedCats + ' categories and ' + deletedItems + ' items.', 'ok');
         } catch (err) {
             console.error(err);
-            setStatus('Error: ' + (err && err.message ? err.message : err) +
-                '\nIf Firestore asks for an index, just use Clear again after seed, or delete from Admin.', 'err');
+            setStatus('Error: ' + (err && err.message ? err.message : err), 'err');
         } finally {
             setBusy(false);
         }
     }
 
     seedBtn.addEventListener('click', seedData);
+    if (sortBtn) sortBtn.addEventListener('click', applyCategoryOrderOnly);
+    if (checkBtn) {
+        checkBtn.addEventListener('click', function () {
+            if (!currentUser) {
+                setStatus('Please login first.', 'err');
+                return;
+            }
+            setBusy(true);
+            setStatus('Checking Firebase…');
+            verifyPaperMenuInFirebase().then(function (check) {
+                setStatus(check.message, check.ok ? 'ok' : 'err');
+            }).catch(function (err) {
+                setStatus('Error: ' + (err && err.message ? err.message : err), 'err');
+            }).then(function () {
+                setBusy(false);
+            });
+        });
+    }
     clearBtn.addEventListener('click', clearSeedData);
 })();
     </script>

@@ -2006,11 +2006,23 @@ function loadManageItems() {
     MenuData.loadItems(itemsTimeout, function (items) {
         clearTimeout(loadTimer);
         console.log('[admin items] Loaded from Firebase:', items.length, 'items');
-        _itemsSnapDocs = items.map(function (d) {
-            return { id: d.id, data: function () { return d; } };
+        // Keep local cache in sync with Firebase (paper menu after seed).
+        writeCachedMenuItemsFlat(items);
+        var catNames = {};
+        items.forEach(function (it) {
+            if (it && it.category) catNames[it.category] = true;
         });
+        try { localStorage.setItem('cachedMenuCategoryNames', JSON.stringify(Object.keys(catNames))); } catch (e) {}
+
+        _itemsSnapDocs = sortItemDocsForAdmin(items.map(function (d) {
+            return { id: d.id, data: function () { return d; } };
+        }));
         renderItemsList(_itemsSnapDocs);
         loadCategoryFilter();
+        refreshCategoriesCache(function () {
+            refreshCategoryFilterOptions();
+            refreshItemCategoryDropdown();
+        });
     }, function (err) {
         clearTimeout(loadTimer);
         console.error('[admin items] Error loading items:', err);
@@ -2053,7 +2065,39 @@ function collectItemDocsFromSnap(snap) {
         if (data.category && data.category.toLowerCase().trim() === 'water') return;
         docs.push(d);
     });
-    return docs;
+    return sortItemDocsForAdmin(docs);
+}
+
+function getCategoryOrderMap() {
+    var map = {};
+    readCachedCategories().forEach(function (c) {
+        if (!c || !c.id) return;
+        var o = c.data && c.data.order != null ? Number(c.data.order) : NaN;
+        map[String(c.id).toLowerCase()] = isNaN(o) ? 9999 : o;
+    });
+    // Paper menu fallback order
+    if (map['western-meals'] == null) map['western-meals'] = 1;
+    if (map['western-sandwiches'] == null) map['western-sandwiches'] = 2;
+    if (map['manaqeesh'] == null) map['manaqeesh'] = 3;
+    if (map['appetizers'] == null) map['appetizers'] = 4;
+    return map;
+}
+
+function sortItemDocsForAdmin(docs) {
+    var catOrder = getCategoryOrderMap();
+    return (docs || []).slice().sort(function (a, b) {
+        var da = typeof a.data === 'function' ? a.data() : (a.data || a);
+        var db_ = typeof b.data === 'function' ? b.data() : (b.data || b);
+        var ca = String((da && da.category) || '').toLowerCase();
+        var cb = String((db_ && db_.category) || '').toLowerCase();
+        var ao = catOrder[ca] != null ? catOrder[ca] : 9999;
+        var bo = catOrder[cb] != null ? catOrder[cb] : 9999;
+        if (ao !== bo) return ao - bo;
+        var ia = da && da.order != null ? Number(da.order) : 0;
+        var ib = db_ && db_.order != null ? Number(db_.order) : 0;
+        if (ia !== ib) return ia - ib;
+        return String(a.id || '').localeCompare(String(b.id || ''));
+    });
 }
 
 function filterItemDocs(docs, searchTerm, cat) {
@@ -3354,6 +3398,25 @@ function loadCategoriesList() {
 
     // Show cached categories immediately (includes ones just saved offline).
     renderCategoriesListNow();
+
+    // Always prefer a fresh server read so paper-menu sync shows in Admin.
+    if (!USE_LOCAL_API && window.db && navigator.onLine) {
+        window.db.collection('categories').get({ source: 'server' }).then(function (snap) {
+            var categories = [];
+            snap.forEach(function (doc) {
+                categories.push({ id: doc.id, data: doc.data() || {} });
+            });
+            categories.sort(function (a, b) {
+                var ao = a.data && a.data.order != null ? Number(a.data.order) : 9999;
+                var bo = b.data && b.data.order != null ? Number(b.data.order) : 9999;
+                if (ao !== bo) return ao - bo;
+                return String(a.id).localeCompare(String(b.id));
+            });
+            safeSetItem('cachedCategories', JSON.stringify(categories));
+            // Show exactly what is in Firebase (no leftover virtual/extra categories).
+            renderCategoriesTable(categories);
+        }).catch(function () { /* fallback to MenuData path below */ });
+    }
 
     if (USE_LOCAL_API) {
         localApiRequest('categories.php').then(function(cats) {
