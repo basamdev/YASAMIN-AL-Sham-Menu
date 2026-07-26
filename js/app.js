@@ -2877,7 +2877,7 @@ function emenuBrownRing(hex, alpha) {
 }
 
 function applyMenuTheme(themeId) {
-    if (!MENU_THEMES[themeId]) themeId = 'light';
+    if (!MENU_THEMES[themeId]) themeId = 'red';
     var theme = MENU_THEMES[themeId];
     theme.id = themeId;
     var body = document.body;
@@ -2929,7 +2929,13 @@ function applyMenuTheme(themeId) {
 
 function setupMenuThemePicker() {
     var saved = localStorage.getItem('menuTheme');
-    if (!saved || !MENU_THEMES[saved]) saved = 'light';
+    try {
+        if (!localStorage.getItem('menuThemeMigratedToRed')) {
+            if (!saved || saved === 'light') saved = 'red';
+            localStorage.setItem('menuThemeMigratedToRed', '1');
+        }
+    } catch (e) {}
+    if (!saved || !MENU_THEMES[saved]) saved = 'red';
     applyMenuTheme(saved);
 
     var themeDropdown = document.getElementById('themeDropdown');

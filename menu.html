@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/style.css?v=146">
 </head>
-<body class="menu-page emenu-layout light-mode" data-menu-theme="light">
+<body class="menu-page emenu-layout light-mode" data-menu-theme="red">
 <script>
 (function () {
     function emenuBrownRing(hex, alpha) {
@@ -66,8 +66,16 @@
         dark:   { id: 'dark',   light: false, brown: '#C4956A', bg: '#141414', cat: '#1E1E1E', card: '#2A2A2A', surface: '#2A2A2A', pill: '#2A2A2A', fab: '#333333', text: '#F0F0F0', border: '#444444', fabText: '#CFCFCF' }
     };
 
-    var id = localStorage.getItem('menuTheme') || 'light';
-    if (!themes[id]) id = 'light';
+    // Default brand theme is red (one-time migrate from old default "light").
+    var id = localStorage.getItem('menuTheme') || 'red';
+    try {
+        if (!localStorage.getItem('menuThemeMigratedToRed')) {
+            if (!localStorage.getItem('menuTheme') || id === 'light') id = 'red';
+            localStorage.setItem('menuTheme', id);
+            localStorage.setItem('menuThemeMigratedToRed', '1');
+        }
+    } catch (e) {}
+    if (!themes[id]) id = 'red';
     applyEmenuThemeCssVars(document.body, themes[id]);
     window.MENU_THEMES = themes;
     window.applyEmenuThemeCssVars = applyEmenuThemeCssVars;
@@ -126,7 +134,7 @@
                 </svg>
             </button>
             <div class="theme-dropdown-menu fab-theme-menu" id="themeDropdownMenu">
-                <button type="button" class="theme-option active" data-theme="light">
+                <button type="button" class="theme-option" data-theme="light">
                     <span class="theme-swatch theme-swatch-light"></span>
                     <span class="theme-name" data-i18n="themeWhite">White</span>
                 </button>
@@ -142,7 +150,7 @@
                     <span class="theme-swatch theme-swatch-gold"></span>
                     <span class="theme-name" data-i18n="themeGold">Gold</span>
                 </button>
-                <button type="button" class="theme-option" data-theme="red">
+                <button type="button" class="theme-option active" data-theme="red">
                     <span class="theme-swatch theme-swatch-red"></span>
                     <span class="theme-name" data-i18n="themeRed">Red</span>
                 </button>
@@ -372,7 +380,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="js/firebase.js?v=126"></script>
     <script src="js/menu-data.js?v=130"></script>
-    <script src="js/app.js?v=134"></script>
+    <script src="js/app.js?v=135"></script>
     <script src="js/local-api.js?v=120"></script>
     <script>
         (function () {
