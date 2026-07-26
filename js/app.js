@@ -3322,6 +3322,9 @@ function normalizeCafeTimeValue(value, fallback) {
         .replace(/\s+/g, ' ')
         .trim();
 
+    // Mobile <input type="time"> often returns HH:MM:SS — keep minutes.
+    normalizedRaw = normalizedRaw.replace(/^(\d{1,2}:\d{2}):\d{2}$/, '$1');
+
     var matchPeriod = normalizedRaw.match(/^(\d{1,2})(?::(\d{2}))?\s*(.+)$/);
     if (matchPeriod) {
         var hourPart = parseInt(matchPeriod[1], 10);
@@ -3456,8 +3459,37 @@ function normalizeSocialUrl(url, platform) {
     return 'https://' + cleaned;
 }
 
-function applyCafeSettingsToLocalStorage(data) {
-    if (!data || typeof data !== 'object') return;
+function getCafeSettingsCloudTimestamp(data) {
+    if (!data || typeof data !== 'object') return 0;
+    var cloudTs = parseInt(data.clientUpdatedAt, 10) || 0;
+    try {
+        if (data.updatedAt && typeof data.updatedAt.toMillis === 'function') {
+            cloudTs = Math.max(cloudTs, data.updatedAt.toMillis());
+        } else if (data.updatedAt && data.updatedAt.seconds != null) {
+            cloudTs = Math.max(cloudTs, Number(data.updatedAt.seconds) * 1000);
+        } else if (typeof data.updatedAt === 'number') {
+            cloudTs = Math.max(cloudTs, data.updatedAt);
+        }
+    } catch (e) { /* ignore */ }
+    return cloudTs;
+}
+
+function shouldApplyCafeSettingsFromCloud(data) {
+    var localTs = parseInt(localStorage.getItem('cafeSettingsUpdatedAt') || '0', 10) || 0;
+    if (!localTs) return true;
+    var cloudTs = getCafeSettingsCloudTimestamp(data);
+    // Prefer a fresh local save over a stale in-flight Firestore get().
+    if (cloudTs && localTs > cloudTs) return false;
+    if (!cloudTs && (Date.now() - localTs) < 15000) return false;
+    return true;
+}
+
+function applyCafeSettingsToLocalStorage(data, options) {
+    if (!data || typeof data !== 'object') return false;
+    options = options || {};
+    if (!options.force && !shouldApplyCafeSettingsFromCloud(data)) {
+        return false;
+    }
     CAFE_SETTING_KEYS.forEach(function (key) {
         if (!Object.prototype.hasOwnProperty.call(data, key)) return;
         var val = data[key];
@@ -3467,6 +3499,11 @@ function applyCafeSettingsToLocalStorage(data) {
             localStorage.setItem(key, String(val).trim());
         }
     });
+    var cloudTs = getCafeSettingsCloudTimestamp(data);
+    if (cloudTs) {
+        try { localStorage.setItem('cafeSettingsUpdatedAt', String(cloudTs)); } catch (e) { /* ignore */ }
+    }
+    return true;
 }
 
 function getCafeSettingsFromLocalStorage() {
@@ -3515,10 +3552,10 @@ function loadCafeSettingsFromFirestore(callback) {
         if (doc.exists) {
             applyCafeSettingsToLocalStorage(doc.data());
         }
-        if (callback) callback();
+        if (callback) callback(doc.exists ? doc.data() : null);
     }).catch(function (err) {
         console.warn('Could not load cafe settings:', err.message);
-        if (callback) callback();
+        if (callback) callback(null);
     });
 }
 
@@ -3552,8 +3589,9 @@ function subscribeCafeSettingsUpdates() {
 
     cafeSettingsUnsubscribe = window.db.collection('settings').doc('cafe').onSnapshot(function (doc) {
         if (doc.exists) {
-            applyCafeSettingsToLocalStorage(doc.data());
-            updateCafeInfoPanel();
+            if (applyCafeSettingsToLocalStorage(doc.data())) {
+                updateCafeInfoPanel();
+            }
         }
     }, function (err) {
         console.warn('Cafe settings listener error:', err.message);
@@ -3578,7 +3616,9 @@ function saveCafeSettingsToFirestore(data, callback) {
         return;
     }
 
+    var clientUpdatedAt = parseInt(data && data.clientUpdatedAt, 10) || Date.now();
     var payload = Object.assign({}, data, {
+        clientUpdatedAt: clientUpdatedAt,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 

@@ -2095,7 +2095,7 @@ body.light-mode .detail-backdrop {
     }
 
     .menu-grid {
-        grid-template-columns: repeat(2, minmax(240px, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 18px;
         margin-top: 16px !important;
         padding-top: 0 !important;
@@ -4408,6 +4408,17 @@ body.emenu-layout:not(.light-mode) .menu-card-foot {
 
     body.emenu-layout .menu-card-img-wrapper {
         height: 160px;
+    }
+}
+
+@media (min-width: 1024px) {
+    body.emenu-layout .menu-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+
+    body.emenu-layout .menu-layout {
+        max-width: 1100px;
     }
 }
 

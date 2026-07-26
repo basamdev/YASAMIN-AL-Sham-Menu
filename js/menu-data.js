@@ -10,6 +10,23 @@
     var _itemsUnsub = null;
     var _categoriesUnsub = null;
 
+    function isMobileBrowser() {
+        return window.innerWidth <= 1024 ||
+            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '') ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    }
+
+    function whenDbReady(fn) {
+        var p = window.dbReady || Promise.resolve(window.db);
+        return Promise.resolve(p).then(function () {
+            if (typeof fn === 'function') fn(window.db);
+            return window.db;
+        }).catch(function () {
+            if (typeof fn === 'function') fn(window.db);
+            return window.db;
+        });
+    }
+
     function collectItemDocs(snap) {
         var docs = [];
         snap.forEach(function (d) {
@@ -24,44 +41,88 @@
 
     function loadItems(timeoutMs, onUpdate, onError) {
         if (_itemsUnsub) { _itemsUnsub(); _itemsUnsub = null; }
-        if (!window.db) { onError(new Error('No DB')); return; }
 
-        // Use shorter timeout for faster loading
-        var isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        var defaultTimeout = isMobile ? 4000 : 2000;
+        whenDbReady(function (db) {
+            if (!db) {
+                if (typeof onError === 'function') onError(new Error('No DB'));
+                return;
+            }
 
-        var timer = setTimeout(function () {
-            window.db.collection('menuItems').get({ source: 'server' })
-                .then(function (snap) {
-                    _items.length = 0;
-                    _items.push.apply(_items, collectItemDocs(snap));
-                    onUpdate(_items.slice());
-                })
-                .catch(function () {
-                    window.db.collection('menuItems').get()
-                        .then(function (snap) {
+            var defaultTimeout = isMobileBrowser() ? 4000 : 2000;
+            var softTimeout = timeoutMs || defaultTimeout;
+            var hardTimeout = Math.max(softTimeout + 4000, isMobileBrowser() ? 12000 : 8000);
+            var settled = false;
+            var softTimer = null;
+            var hardTimer = null;
+
+            function finishUpdate(list) {
+                settled = true;
+                if (softTimer) clearTimeout(softTimer);
+                if (hardTimer) clearTimeout(hardTimer);
+                if (typeof onUpdate === 'function') onUpdate(list);
+            }
+
+            function finishError(err) {
+                if (settled) return;
+                settled = true;
+                if (softTimer) clearTimeout(softTimer);
+                if (hardTimer) clearTimeout(hardTimer);
+                if (typeof onError === 'function') onError(err || new Error('Connection timeout'));
+            }
+
+            softTimer = setTimeout(function () {
+                if (settled) return;
+                db.collection('menuItems').get({ source: 'server' })
+                    .then(function (snap) {
+                        _items.length = 0;
+                        _items.push.apply(_items, collectItemDocs(snap));
+                        finishUpdate(_items.slice());
+                    })
+                    .catch(function () {
+                        return db.collection('menuItems').get().then(function (snap) {
                             _items.length = 0;
                             _items.push.apply(_items, collectItemDocs(snap));
-                            onUpdate(_items.slice());
-                        })
-                        .catch(onError);
-                });
-        }, timeoutMs || defaultTimeout);
+                            finishUpdate(_items.slice());
+                        });
+                    })
+                    .catch(function (err) {
+                        // Keep waiting for onSnapshot / hard timeout unless empty memory.
+                        if (!_items.length) finishError(err);
+                    });
+            }, softTimeout);
 
-        _itemsUnsub = window.db.collection('menuItems').onSnapshot(
-            function (snap) {
-                if (!snap.metadata.fromCache && snap.size > 0) {
-                    clearTimeout(timer);
+            hardTimer = setTimeout(function () {
+                if (_items.length) {
+                    finishUpdate(_items.slice());
+                } else {
+                    finishError(new Error('Connection timeout'));
                 }
-                _items.length = 0;
-                _items.push.apply(_items, collectItemDocs(snap));
-                onUpdate(_items.slice());
-            },
-            function (err) {
-                console.warn('[menu-data] items error:', err.message);
-                onError(err);
-            }
-        );
+            }, hardTimeout);
+
+            _itemsUnsub = db.collection('menuItems').onSnapshot(
+                function (snap) {
+                    // Clear soft timer on any snapshot (including empty / cache).
+                    if (softTimer) {
+                        clearTimeout(softTimer);
+                        softTimer = null;
+                    }
+                    _items.length = 0;
+                    _items.push.apply(_items, collectItemDocs(snap));
+                    if (typeof onUpdate === 'function') onUpdate(_items.slice());
+                    if (!snap.metadata.fromCache || _items.length > 0) {
+                        settled = true;
+                        if (hardTimer) {
+                            clearTimeout(hardTimer);
+                            hardTimer = null;
+                        }
+                    }
+                },
+                function (err) {
+                    console.warn('[menu-data] items error:', err.message);
+                    finishError(err);
+                }
+            );
+        });
     }
 
     function sortCategoriesList(list) {
@@ -87,39 +148,83 @@
 
     function loadCategories(timeoutMs, onUpdate, onError) {
         if (_categoriesUnsub) { _categoriesUnsub(); _categoriesUnsub = null; }
-        if (!window.db) { onError(new Error('No DB')); return; }
 
-        // Do NOT use orderBy('order') — docs missing `order` are excluded by Firestore.
-        // Load all categories, then sort client-side.
-        var isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        var defaultTimeout = isMobile ? 4000 : 2000;
-
-        var timer = setTimeout(function () {
-            window.db.collection('categories').get({ source: 'server' })
-                .then(function (snap) {
-                    applyCategoriesSnap(snap, onUpdate);
-                })
-                .catch(function () {
-                    window.db.collection('categories').get()
-                        .then(function (snap) {
-                            applyCategoriesSnap(snap, onUpdate);
-                        })
-                        .catch(onError);
-                });
-        }, timeoutMs || defaultTimeout);
-
-        _categoriesUnsub = window.db.collection('categories').onSnapshot(
-            function (snap) {
-                if (!snap.metadata.fromCache && snap.size > 0) {
-                    clearTimeout(timer);
-                }
-                applyCategoriesSnap(snap, onUpdate);
-            },
-            function (err) {
-                console.warn('[menu-data] categories error:', err.message);
-                onError(err);
+        whenDbReady(function (db) {
+            if (!db) {
+                if (typeof onError === 'function') onError(new Error('No DB'));
+                return;
             }
-        );
+
+            // Do NOT use orderBy('order') — docs missing `order` are excluded by Firestore.
+            var defaultTimeout = isMobileBrowser() ? 4000 : 2000;
+            var softTimeout = timeoutMs || defaultTimeout;
+            var hardTimeout = Math.max(softTimeout + 4000, isMobileBrowser() ? 12000 : 8000);
+            var settled = false;
+            var softTimer = null;
+            var hardTimer = null;
+
+            function finishUpdate(list) {
+                settled = true;
+                if (softTimer) clearTimeout(softTimer);
+                if (hardTimer) clearTimeout(hardTimer);
+                if (typeof onUpdate === 'function') onUpdate(list);
+            }
+
+            function finishError(err) {
+                if (settled) return;
+                settled = true;
+                if (softTimer) clearTimeout(softTimer);
+                if (hardTimer) clearTimeout(hardTimer);
+                if (typeof onError === 'function') onError(err || new Error('Connection timeout'));
+            }
+
+            softTimer = setTimeout(function () {
+                if (settled) return;
+                db.collection('categories').get({ source: 'server' })
+                    .then(function (snap) {
+                        applyCategoriesSnap(snap, finishUpdate);
+                    })
+                    .catch(function () {
+                        return db.collection('categories').get().then(function (snap) {
+                            applyCategoriesSnap(snap, finishUpdate);
+                        });
+                    })
+                    .catch(function (err) {
+                        if (!_categories.length) finishError(err);
+                    });
+            }, softTimeout);
+
+            hardTimer = setTimeout(function () {
+                if (_categories.length) {
+                    finishUpdate(_categories.slice());
+                } else {
+                    finishError(new Error('Connection timeout'));
+                }
+            }, hardTimeout);
+
+            _categoriesUnsub = db.collection('categories').onSnapshot(
+                function (snap) {
+                    if (softTimer) {
+                        clearTimeout(softTimer);
+                        softTimer = null;
+                    }
+                    applyCategoriesSnap(snap, function (list) {
+                        if (typeof onUpdate === 'function') onUpdate(list);
+                    });
+                    if (!snap.metadata.fromCache || _categories.length > 0) {
+                        settled = true;
+                        if (hardTimer) {
+                            clearTimeout(hardTimer);
+                            hardTimer = null;
+                        }
+                    }
+                },
+                function (err) {
+                    console.warn('[menu-data] categories error:', err.message);
+                    finishError(err);
+                }
+            );
+        });
     }
 
     function getItems() { return _items; }
@@ -158,7 +263,3 @@
         unsubscribeAll: unsubscribeAll
     };
 })();
-
-
-
-

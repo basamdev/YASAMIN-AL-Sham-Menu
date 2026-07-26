@@ -608,37 +608,46 @@ function fetchPublicCollectionViaRest(collectionName, timeoutMs) {
     });
 }
 
+function mapAdminRestMenuItem(d) {
+    var data = (d && d.data) || d || {};
+    return {
+        id: d.id,
+        name_ku: data.name_ku || '',
+        name_ar: data.name_ar || '',
+        name_en: data.name_en || '',
+        price: data.price || 0,
+        category: data.category || '',
+        image: data.image || '',
+        available: data.available !== false,
+        description_ku: data.description_ku || '',
+        description_ar: data.description_ar || '',
+        description_en: data.description_en || '',
+        group_ku: data.group_ku || '',
+        group_ar: data.group_ar || '',
+        group_en: data.group_en || '',
+        updated_at: data.updated_at || '',
+        createdBy: data.createdBy || ''
+    };
+}
+
 function fetchMenuItemsForAdmin(timeoutMs) {
     if (window._firestoreApiDisabled) return Promise.resolve([]);
-    if (typeof fetchAllAdminCollectionViaRest === 'function') {
-        return fetchAllAdminCollectionViaRest('menuItems', timeoutMs || 12000).then(function (docs) {
-            return docs.map(function (d) {
-                var data = d.data || {};
-                return {
-                    id: d.id,
-                    name_ku: data.name_ku || '',
-                    name_ar: data.name_ar || '',
-                    name_en: data.name_en || '',
-                    price: data.price || 0,
-                    category: data.category || '',
-                    image: data.image || '',
-                    available: data.available !== false,
-                    description_ku: data.description_ku || '',
-                    description_ar: data.description_ar || '',
-                    description_en: data.description_en || '',
-                    group_ku: data.group_ku || '',
-                    group_ar: data.group_ar || '',
-                    group_en: data.group_en || '',
-                    updated_at: data.updated_at || '',
-                    createdBy: data.createdBy || ''
-                };
-            });
+    timeoutMs = timeoutMs || 12000;
+
+    function viaPublicRest() {
+        if (typeof fetchMenuViaRest !== 'function') return Promise.resolve([]);
+        return fetchMenuViaRest(timeoutMs).catch(function () { return []; });
+    }
+
+    // Auth REST can hang/fail on cold mobile open before auth settles — fall back to public REST.
+    if (isAdminAuthenticated() && typeof fetchAllAdminCollectionViaRest === 'function') {
+        return fetchAllAdminCollectionViaRest('menuItems', timeoutMs).then(function (docs) {
+            return docs.map(mapAdminRestMenuItem);
+        }).catch(function () {
+            return viaPublicRest();
         });
     }
-    if (typeof fetchMenuViaRest === 'function') {
-        return fetchMenuViaRest(timeoutMs || 12000);
-    }
-    return Promise.resolve([]);
+    return viaPublicRest();
 }
 
 function fetchCategoriesForAdmin(timeoutMs) {
@@ -1336,8 +1345,10 @@ function refreshAdminCurrentSection() {
     } else if (section === 'expenses' && document.getElementById('expensesList')) {
         renderExpensesUI(getExpensesMonth());
     } else if (section === 'items' && document.getElementById('itemsList')) {
-        hydrateItemsUiFromCache();
+        // Retry paint after auth/db ready without rebuilding the whole section UI.
         loadItemsList();
+    } else if (section === 'categories' && document.getElementById('categoriesList')) {
+        loadCategoriesList();
     }
 }
 
@@ -1517,23 +1528,24 @@ function initAdminPanel() {
     });
 
     var defaultBtn = document.querySelector('.admin-nav-btn.active');
-    if (defaultBtn) {
-        loadAdminSection(defaultBtn.getAttribute('data-section'));
-        whenAdminReady(function () {
-            startAdminLiveListeners();
-            refreshAdminCurrentSection();
-        });
-    } else {
+    var initialSection = defaultBtn
+        ? defaultBtn.getAttribute('data-section')
+        : 'items';
+    if (!defaultBtn) {
         var fallbackBtn = document.querySelector('.admin-nav-btn[data-section="items"]');
-        if (fallbackBtn) {
-            fallbackBtn.classList.add('active');
-            loadAdminSection('items');
-            whenAdminReady(function () {
-                startAdminLiveListeners();
-                refreshAdminCurrentSection();
-            });
-        }
+        if (fallbackBtn) fallbackBtn.classList.add('active');
     }
+
+    // Wait for auth + Firestore before first section load (fixes mobile infinite spinner).
+    var bootContent = document.getElementById('adminContent');
+    var bootS = i18n[localStorage.getItem('selectedLang') || 'ku'] || i18n.en;
+    if (bootContent && !bootContent.querySelector('.card')) {
+        bootContent.innerHTML = '<div class="loading">' + (bootS.loading || 'Loading...') + '</div>';
+    }
+    whenAdminReady(function () {
+        startAdminLiveListeners();
+        loadAdminSection(initialSection);
+    });
 }
 
 function loadAdminSection(section) {
@@ -1957,8 +1969,10 @@ function loadManageItems() {
         console.log('[admin items] Loaded from cache');
     }
 
-    // Detect mobile and use slightly longer timeout for slower mobile connections
-    var isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    // Longer timeouts on phones/tablets (incl. iPad) where Firestore WebChannel is slower.
+    var isMobile = window.innerWidth <= 1024 ||
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     var itemsTimeout = isMobile ? 6000 : 3000;
     var safetyTimeout = isMobile ? 8000 : 5000;
 
@@ -1966,27 +1980,23 @@ function loadManageItems() {
         if (MenuData.getItems().length === 0) {
             var el = document.getElementById('itemsList');
             if (el) {
-                // Try cache one more time before showing error
                 if (!hydrateItemsUiFromCache()) {
-                    // On mobile, try REST API fallback before showing error
-                    if (isMobile && typeof fetchMenuItemsForAdmin === 'function') {
-                        console.log('[admin items] Trying REST API fallback');
-                        fetchMenuItemsForAdmin(12000).then(function(items) {
-                            if (items && items.length > 0) {
-                                _itemsSnapDocs = items.map(function (d) {
-                                    return { id: d.id, data: function () { return d; } };
-                                });
-                                renderItemsList(_itemsSnapDocs);
-                                loadCategoryFilter();
-                            } else {
-                                el.innerHTML = '<p style="color:var(--text-muted);">' + (S.menuConnectionHint || 'Check your connection and try again.') + '</p>';
-                            }
-                        }).catch(function() {
+                    console.log('[admin items] Trying REST API fallback');
+                    fetchMenuItemsForAdmin(12000).then(function (items) {
+                        if (items && items.length > 0) {
+                            _itemsSnapDocs = items.map(function (d) {
+                                return { id: d.id, data: function () { return d; } };
+                            });
+                            renderItemsList(_itemsSnapDocs);
+                            loadCategoryFilter();
+                        } else if (el.querySelector('.loading')) {
                             el.innerHTML = '<p style="color:var(--text-muted);">' + (S.menuConnectionHint || 'Check your connection and try again.') + '</p>';
-                        });
-                    } else {
-                        el.innerHTML = '<p style="color:var(--text-muted);">' + (S.menuConnectionHint || 'Check your connection and try again.') + '</p>';
-                    }
+                        }
+                    }).catch(function () {
+                        if (el.querySelector('.loading')) {
+                            el.innerHTML = '<p style="color:var(--text-muted);">' + (S.menuConnectionHint || 'Check your connection and try again.') + '</p>';
+                        }
+                    });
                 }
             }
         }
@@ -2008,28 +2018,22 @@ function loadManageItems() {
             console.log('[admin items] Showing cached data after error');
             return;
         }
-        // On mobile, try REST API fallback
-        if (isMobile && typeof fetchMenuItemsForAdmin === 'function') {
-            console.log('[admin items] Trying REST API fallback after error');
-            fetchMenuItemsForAdmin(12000).then(function(items) {
-                if (items && items.length > 0) {
-                    _itemsSnapDocs = items.map(function (d) {
-                        return { id: d.id, data: function () { return d; } };
-                    });
-                    renderItemsList(_itemsSnapDocs);
-                    loadCategoryFilter();
-                } else {
-                    var el = document.getElementById('itemsList');
-                    if (el) el.innerHTML = '<p style="color:#C62828;">' + S.errorPrefix + err.message + '</p>';
-                }
-            }).catch(function() {
+        console.log('[admin items] Trying REST API fallback after error');
+        fetchMenuItemsForAdmin(12000).then(function (items) {
+            if (items && items.length > 0) {
+                _itemsSnapDocs = items.map(function (d) {
+                    return { id: d.id, data: function () { return d; } };
+                });
+                renderItemsList(_itemsSnapDocs);
+                loadCategoryFilter();
+            } else {
                 var el = document.getElementById('itemsList');
                 if (el) el.innerHTML = '<p style="color:#C62828;">' + S.errorPrefix + err.message + '</p>';
-            });
-        } else {
+            }
+        }).catch(function () {
             var el = document.getElementById('itemsList');
             if (el) el.innerHTML = '<p style="color:#C62828;">' + S.errorPrefix + err.message + '</p>';
-        }
+        });
     });
 }
 
@@ -2213,11 +2217,6 @@ function loadItemsList() {
          loadCategoryFilter();
          return;
      }
-     if (!window.db) {
-         var el = document.getElementById('itemsList');
-         if (el) el.innerHTML = '<p>' + S.noItemsFound + '</p>';
-         return;
-     }
      var items = MenuData.getItems();
      if (items.length > 0) {
          _itemsSnapDocs = items.map(function (d) {
@@ -2225,6 +2224,40 @@ function loadItemsList() {
          });
          renderItemsList(_itemsSnapDocs);
          loadCategoryFilter();
+         return;
+     }
+     if (!window.db) {
+         var el = document.getElementById('itemsList');
+         if (el && el.querySelector('.loading')) {
+             el.innerHTML = '<p>' + S.noItemsFound + '</p>';
+         }
+         return;
+     }
+     // Still empty after auth — do not leave spinner forever.
+     if (adminSectionStillLoading('itemsList')) {
+         MenuData.loadItems(6000, function (fresh) {
+             _itemsSnapDocs = fresh.map(function (d) {
+                 return { id: d.id, data: function () { return d; } };
+             });
+             renderItemsList(_itemsSnapDocs);
+             loadCategoryFilter();
+         }, function () {
+             fetchMenuItemsForAdmin(12000).then(function (restItems) {
+                 if (restItems && restItems.length) {
+                     _itemsSnapDocs = restItems.map(function (d) {
+                         return { id: d.id, data: function () { return d; } };
+                     });
+                     renderItemsList(_itemsSnapDocs);
+                     loadCategoryFilter();
+                 } else if (!hydrateItemsUiFromCache()) {
+                     clearAdminLoadingEl('itemsList', '<p>' + (S.menuConnectionHint || S.noItemsFound) + '</p>');
+                 }
+             }).catch(function () {
+                 if (!hydrateItemsUiFromCache()) {
+                     clearAdminLoadingEl('itemsList', '<p>' + (S.menuConnectionHint || S.noItemsFound) + '</p>');
+                 }
+             });
+         });
      }
 }
 
@@ -3148,7 +3181,9 @@ function renderCategoriesListNow() {
     var cats = readCachedCategories();
     var have = {};
     cats.forEach(function (c) { have[c.id] = true; });
-    renderCategoriesTable(mergeMenuCategories(cats, have));
+    var merged = mergeMenuCategories(cats, have);
+    renderCategoriesTable(merged);
+    return merged.length > 0;
 }
 
 function loadManageCategories() {
@@ -3314,10 +3349,10 @@ function mergeMenuCategories(realCats, haveIds) {
 function loadCategoriesList() {
     var list = document.getElementById('categoriesList');
     if (!list) return;
+    var S = i18n[localStorage.getItem('selectedLang') || 'ku'] || i18n.en;
 
     // Show cached categories immediately (includes ones just saved offline).
     renderCategoriesListNow();
-    clearAdminLoadingEl('categoriesList', '');
 
     if (USE_LOCAL_API) {
         localApiRequest('categories.php').then(function(cats) {
@@ -3343,14 +3378,11 @@ function loadCategoriesList() {
 
     if (!window.db) {
         if (!readCachedCategories().length) {
-            clearAdminLoadingEl('categoriesList', '<p style="color:var(--text-muted);padding:8px 2px;">' + (i18n[localStorage.getItem('selectedLang') || 'ku'] || i18n.en).noCategories + '</p>');
+            clearAdminLoadingEl('categoriesList', '<p style="color:var(--text-muted);padding:8px 2px;">' + S.noCategories + '</p>');
         }
         return;
     }
 
-    // Load categories via the shared MenuData layer (onSnapshot with a get()
-    // timeout fallback) — the same reliable path menu.html uses. This fixes the
-    // infinite "Loading..." on mobile and keeps the list live-updating.
     function applyCategories(categories) {
         var merged = mergeCategoryLists(categories, readCachedCategories());
         safeSetItem('cachedCategories', JSON.stringify(merged));
@@ -3363,33 +3395,28 @@ function loadCategoriesList() {
         applyCategories(MenuData.getCategories());
     }
 
-    // Detect mobile and use slightly longer timeout for slower mobile connections
-    var isMobileCat = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    var isMobileCat = window.innerWidth <= 1024 ||
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     var catTimeout = isMobileCat ? 6000 : 3000;
     var catSafetyTimeout = isMobileCat ? 8000 : 5000;
 
-    // Safety timeout for slow mobile networks
     var catLoadTimer = setTimeout(function () {
         var el = document.getElementById('categoriesList');
-        if (el && el.querySelector('.loading')) {
-            // Try to show cached categories before showing error
-            if (!renderCategoriesListNow()) {
-                // On mobile, try REST API fallback before showing error
-                if (isMobileCat && typeof fetchCategoriesForAdmin === 'function') {
-                    console.log('[admin categories] Trying REST API fallback');
-                    fetchCategoriesForAdmin(12000).then(function(categories) {
-                        if (categories && categories.length > 0) {
-                            applyCategories(categories);
-                        } else {
-                            el.innerHTML = '<p style="color:var(--text-muted);">' + (S.menuConnectionHint || 'Check your connection and try again.') + '</p>';
-                        }
-                    }).catch(function() {
-                        el.innerHTML = '<p style="color:var(--text-muted);">' + (S.menuConnectionHint || 'Check your connection and try again.') + '</p>';
-                    });
+        if (!el) return;
+        if (renderCategoriesListNow()) return;
+        if (el.querySelector('.loading') || !el.textContent.trim()) {
+            fetchCategoriesForAdmin(12000).then(function (categories) {
+                if (categories && categories.length > 0) {
+                    applyCategories(categories);
                 } else {
                     el.innerHTML = '<p style="color:var(--text-muted);">' + (S.menuConnectionHint || 'Check your connection and try again.') + '</p>';
                 }
-            }
+            }).catch(function () {
+                if (!renderCategoriesListNow()) {
+                    el.innerHTML = '<p style="color:var(--text-muted);">' + (S.menuConnectionHint || 'Check your connection and try again.') + '</p>';
+                }
+            });
         }
     }, catSafetyTimeout);
 
@@ -3401,25 +3428,17 @@ function loadCategoriesList() {
         if (isFirestoreApiDisabledError(err)) {
             showFirestoreApiDisabledAlert();
         }
-        // On mobile, try REST API fallback
-        if (isMobileCat && typeof fetchCategoriesForAdmin === 'function') {
-            console.log('[admin categories] Trying REST API fallback after error');
-            fetchCategoriesForAdmin(12000).then(function(categories) {
-                if (categories && categories.length > 0) {
-                    applyCategories(categories);
-                } else {
-                    renderCategoriesListNow();
-                }
-            }).catch(function() {
+        fetchCategoriesForAdmin(12000).then(function (categories) {
+            if (categories && categories.length > 0) {
+                applyCategories(categories);
+            } else {
                 renderCategoriesListNow();
-            });
-        } else {
+            }
+        }).catch(function () {
             renderCategoriesListNow();
-        }
+        });
     });
 
-    // Derive menu-only category names from the shared items cache (no extra read
-    // when items are already loaded, e.g. after visiting Manage Items).
     function applyMenuNamesFromItems(items) {
         var names = {};
         items.forEach(function (it) {
@@ -5155,17 +5174,26 @@ function loadSettings() {
                 storeSetting('cafeFacebook', cafeFacebook);
                 storeSetting('cafeOpenTime', cafeOpenTime);
                 storeSetting('cafeCloseTime', cafeCloseTime);
+                var clientUpdatedAt = Date.now();
                 try {
-                    localStorage.setItem('cafeSettingsUpdatedAt', String(Date.now()));
+                    localStorage.setItem('cafeSettingsUpdatedAt', String(clientUpdatedAt));
                 } catch (e) {}
 
+                setInputValue('cafeName', cafeName);
                 setInputValue('whatsappPhone', whatsappPhone);
+                setInputValue('cafeLocationUrl', cafeLocationUrl);
+                setInputValue('cafeLocationLabel', cafeLocationLabel);
                 setInputValue('cafeInstagram', cafeInstagram);
                 setInputValue('cafeTiktok', cafeTiktok);
                 setInputValue('cafeSnapchat', cafeSnapchat);
                 setInputValue('cafeFacebook', cafeFacebook);
                 setInputValue('cafeOpenTime', cafeOpenTime);
                 setInputValue('cafeCloseTime', cafeCloseTime);
+
+                ['cafeName', 'whatsappPhone', 'cafeLocationUrl', 'cafeLocationLabel', 'cafeInstagram', 'cafeTiktok', 'cafeSnapchat', 'cafeFacebook', 'cafeOpenTime', 'cafeCloseTime'].forEach(function (id) {
+                    var input = document.getElementById(id);
+                    if (input) input.removeAttribute('data-dirty');
+                });
 
                 var settingsPayload = {
                     cafeName: cafeName,
@@ -5177,7 +5205,8 @@ function loadSettings() {
                     cafeSnapchat: cafeSnapchat,
                     cafeFacebook: cafeFacebook,
                     cafeOpenTime: cafeOpenTime,
-                    cafeCloseTime: cafeCloseTime
+                    cafeCloseTime: cafeCloseTime,
+                    clientUpdatedAt: clientUpdatedAt
                 };
 
                 if (typeof saveCafeSettingsToFirestore === 'function') {
@@ -5191,6 +5220,10 @@ function loadSettings() {
                             }
                         } else {
                             alert(S.settingsSaved);
+                        }
+                        // Refresh cafe info UI if menu panel helpers exist in this session.
+                        if (typeof updateCafeInfoPanel === 'function') {
+                            try { updateCafeInfoPanel(); } catch (e) { /* ignore */ }
                         }
                     });
                 } else {
@@ -5223,11 +5256,14 @@ function loadSettings() {
                 if (!input) return;
                 if (input.getAttribute('data-dirty') === '1') return;
                 if (document.activeElement === input) return;
-                var value = localStorage.getItem(storageKey) || '';
+                var value = localStorage.getItem(storageKey);
+                if (value == null) value = '';
+                value = String(value).trim();
                 if (storageKey === 'whatsappPhone' && typeof normalizeWhatsAppPhone === 'function') {
-                    value = normalizeWhatsAppPhone(value || input.value || '');
+                    value = normalizeWhatsAppPhone(value || '');
                 }
-                if (value !== '') input.value = value;
+                // Always refresh — including cleared social links.
+                input.value = value;
             });
             var openLoaded = document.getElementById('cafeOpenTime');
             var closeLoaded = document.getElementById('cafeCloseTime');
