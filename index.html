@@ -4,21 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>مطعم ياسمين الشام</title>
-    <link rel="manifest" href="manifest.json?v=117">
-    <link rel="icon" type="image/png" href="assets/yassamin-alsham-logo.png?v=8">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/yassamin-alsham-logo.png?v=8">
+    <link rel="manifest" href="manifest.json?v=118">
+    <link rel="icon" type="image/png" href="assets/icon-192.png?v=16">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=16">
     <meta name="application-name" content="YASAMIN AL-SHAM">
-    <meta name="msapplication-TileColor" content="#5C4033">
-    <meta name="msapplication-TileImage" content="assets/yassamin-alsham-logo.png?v=8">
+    <meta name="msapplication-TileColor" content="#C21807">
+    <meta name="msapplication-TileImage" content="assets/icon-512.png?v=16">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="YASAMIN AL-SHAM">
-    <meta name="theme-color" content="#0A0A0B">
+    <meta name="theme-color" content="#C21807">
     <style>html,body{background:#0A0A0B!important;}</style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Tajawal:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=136">
+    <link rel="stylesheet" href="css/style.css?v=141">
     <style>
         :lang(en) {
             font-family: var(--font-body);
@@ -52,57 +53,66 @@
             ) !important;
         }
 
-        /* Full vertical logo — no circle crop */
+        /* New circular logo (text already on image) + red shadow */
         body.index-page .logo-splash img {
-            width: auto;
-            height: clamp(120px, 22vh, 180px);
-            max-width: min(52vw, 160px);
-            border-radius: 0;
+            width: clamp(140px, 34vw, 190px);
+            height: clamp(140px, 34vw, 190px);
+            max-width: none;
+            border-radius: 50%;
             object-fit: contain;
             border: none;
             background: transparent;
-            filter: drop-shadow(0 10px 28px rgba(194,24,7,0.35));
+            padding: 0;
+            filter: drop-shadow(0 12px 28px rgba(194,24,7,0.55));
             box-shadow: none;
         }
         body.index-page .logo-float-wrap {
-            width: auto;
-            height: auto;
-            border-radius: 0;
-            box-shadow: none;
+            width: clamp(170px, 38vw, 230px);
+            height: clamp(170px, 38vw, 230px);
+            border-radius: 50%;
+            padding: 0;
             background: transparent;
+            box-shadow: none;
             overflow: visible;
+            line-height: 0;
         }
         body.index-page .hero .logo {
-            width: auto !important;
-            height: clamp(140px, 26vh, 220px) !important;
-            max-width: min(56vw, 180px);
-            border-radius: 0;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: none;
+            border-radius: 50%;
             object-fit: contain;
             border: none;
             background: transparent;
-            filter: drop-shadow(0 12px 36px rgba(194,24,7,0.4));
+            filter: drop-shadow(0 14px 32px rgba(194,24,7,0.55));
             box-shadow: none;
             transition: transform 0.3s ease, filter 0.3s ease;
+            display: block;
         }
         body.index-page .hero .logo:hover {
             transform: scale(1.03);
-            filter: drop-shadow(0 16px 44px rgba(194,24,7,0.5));
+            filter: drop-shadow(0 18px 40px rgba(194,24,7,0.65));
             box-shadow: none;
         }
         @media (max-width: 480px) {
             body.index-page .logo-splash img {
-                height: clamp(96px, 18vh, 130px);
-                max-width: min(42vw, 120px);
+                width: 130px;
+                height: 130px;
             }
-            body.index-page .hero .logo {
-                height: clamp(110px, 20vh, 150px) !important;
-                max-width: min(44vw, 130px);
+            body.index-page .logo-float-wrap {
+                width: 150px;
+                height: 150px;
             }
         }
 
-        /* Arabic title — Cairo/Tajawal, no letter-spacing (keeps letters connected) */
+        /* Restored typewriter title under logo */
         body.index-page .cafe-name,
         body.index-page.light-mode .cafe-name {
+            position: static !important;
+            width: auto !important;
+            height: auto !important;
+            overflow: visible !important;
+            clip: auto !important;
             font-family: "Cairo", "Tajawal", var(--font-arabic), sans-serif !important;
             letter-spacing: 0 !important;
             font-size: clamp(1.35rem, 4.8vw, 2rem);
@@ -111,7 +121,7 @@
             text-transform: none;
             color: #FFFFFF !important;
             text-shadow: 0 2px 16px rgba(0,0,0,0.55);
-            margin-top: 0.35rem;
+            margin-top: 0.5rem;
         }
         body.index-page .cafe-name .menu-hero-typewriter,
         body.index-page .cafe-name .menu-hero-typed,
@@ -133,17 +143,6 @@
             box-shadow: 0 0 8px rgba(255,255,255,0.45);
         }
 
-        /* Splash Arabic title */
-        body.index-page .logo-splash-text {
-            font-family: "Cairo", "Tajawal", var(--font-arabic), sans-serif !important;
-            letter-spacing: 0 !important;
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: #FFFFFF !important;
-            text-shadow: 0 2px 12px rgba(0,0,0,0.45);
-            direction: rtl;
-            unicode-bidi: plaintext;
-        }
         body.index-page .logo-splash-dots span {
             background: #C21807 !important;
         }
@@ -156,8 +155,7 @@
 <body class="index-page has-video-bg">
 
     <div class="logo-splash" id="logoSplash">
-        <img src="assets/yassamin-logo-full.png?v=9" alt="YASAMIN AL-SHAM" onerror="this.onerror=null; this.src='assets/yassamin-alsham-logo.png?v=8';">
-        <span class="logo-splash-text" dir="rtl" lang="ar">مطعم ياسمين الشام</span>
+        <img src="assets/yassamin-logo-badge.png?v=16" alt="YASAMIN AL-SHAM" onerror="this.onerror=null; this.src='assets/yassamin-alsham-logo.png?v=16';">
         <div class="logo-splash-dots"><span></span><span></span><span></span></div>
     </div>
 
@@ -169,8 +167,8 @@
     <section class="hero">
         <div class="hero-center">
 <div class="logo-float-wrap">
-                 <img src="assets/yassamin-logo-full.png?v=9" alt="YASAMIN AL-SHAM" class="logo" id="indexLogo"
-                     onerror="this.onerror=null; this.src='assets/yassamin-alsham-logo.png?v=8';">
+                 <img src="assets/yassamin-logo-badge.png?v=16" alt="YASAMIN AL-SHAM" class="logo" id="indexLogo"
+                     onerror="this.onerror=null; this.src='assets/yassamin-alsham-logo.png?v=16';">
                </div>
                <h1 class="cafe-name">
                  <span class="menu-hero-typewriter" id="heroTypewriter" aria-live="polite">

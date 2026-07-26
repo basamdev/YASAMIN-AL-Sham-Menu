@@ -645,43 +645,40 @@ body.index-page .logo-float-wrap {
     will-change: transform;
 }
 
+body.index-page .logo-float-wrap {
+    border-radius: 50%;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+}
+
 body.index-page .hero .logo {
-    width: auto;
-    height: clamp(140px, 26vh, 220px);
-    max-width: min(56vw, 180px);
-    border-radius: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    border-radius: 50%;
     object-fit: contain;
     animation: none;
     box-shadow: none;
-    filter: drop-shadow(0 12px 36px rgba(194, 24, 7, 0.4));
+    filter: drop-shadow(0 14px 32px rgba(194, 24, 7, 0.55));
+    background: transparent;
 }
 
 body.index-page .hero .logo:hover {
     transform: scale(1.03);
     box-shadow: none;
-    filter: drop-shadow(0 16px 44px rgba(194, 24, 7, 0.5));
+    filter: drop-shadow(0 18px 40px rgba(194, 24, 7, 0.65));
 }
 
 body.index-page .logo-splash img {
-    width: auto;
-    height: clamp(120px, 22vh, 180px);
-    max-width: min(52vw, 160px);
-    border-radius: 0;
+    width: clamp(140px, 34vw, 190px);
+    height: clamp(140px, 34vw, 190px);
+    max-width: none;
+    border-radius: 50%;
     object-fit: contain;
     box-shadow: none;
-    filter: drop-shadow(0 10px 28px rgba(194, 24, 7, 0.35));
-}
-
-@media (max-width: 480px) {
-    body.index-page .logo-splash img {
-        height: clamp(96px, 18vh, 130px);
-        max-width: min(42vw, 120px);
-    }
-
-    body.index-page .hero .logo {
-        height: clamp(110px, 20vh, 150px);
-        max-width: min(44vw, 130px);
-    }
+    filter: drop-shadow(0 12px 28px rgba(194, 24, 7, 0.55));
+    background: transparent;
 }
 
 .hero .logo:hover {
@@ -5071,19 +5068,26 @@ body.emenu-layout .menu-hero-logo-wrap {
     position: relative;
     line-height: 0;
     flex-shrink: 0;
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
 }
 
 body.emenu-layout .menu-hero-logo {
-    width: auto;
-    height: clamp(56px, 12vw, 72px);
-    max-width: 56px;
-    border-radius: 0;
+    width: clamp(72px, 15vw, 96px);
+    height: clamp(72px, 15vw, 96px);
+    max-width: none;
+    border-radius: 50%;
     object-fit: contain;
     border: none;
     box-shadow: none;
-    filter: drop-shadow(0 4px 14px rgba(194, 24, 7, 0.4));
+    filter: drop-shadow(0 6px 16px rgba(194, 24, 7, 0.55));
     transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), filter 0.55s ease;
     background: transparent;
+    display: block;
 }
 
 body.emenu-layout .menu-hero-logo-ring {
@@ -5150,9 +5154,9 @@ body.emenu-layout .menu-hero-brand.hero-theme-pulse .menu-hero-cursor {
 }
 
 body.emenu-layout .menu-hero-brand.hero-theme-pulse .menu-hero-logo {
-    transform: scale(1.06);
+    transform: scale(1.05);
     box-shadow: none;
-    filter: drop-shadow(0 6px 18px rgba(194, 24, 7, 0.55));
+    filter: drop-shadow(0 8px 20px rgba(194, 24, 7, 0.65));
 }
 
 body.emenu-layout .menu-hero-brand.hero-theme-pulse .menu-hero-logo-ring {
@@ -5189,8 +5193,8 @@ body.emenu-layout .menu-hero-brand.hero-theme-pulse .menu-hero-logo-ring {
     }
 
     body.emenu-layout .menu-hero-logo {
-        height: 48px;
-        max-width: 44px;
+        width: 68px;
+        height: 68px;
     }
 
     body.emenu-layout .menu-hero-typewriter {
@@ -5291,12 +5295,14 @@ body.emenu-layout .menu-hero-brand.hero-theme-pulse .menu-hero-logo-ring {
 }
 
 .cafe-info-logo-wrap {
-    width: 88px;
-    height: 88px;
+    width: 96px;
+    height: 96px;
     border-radius: 50%;
     padding: 3px;
-    background: linear-gradient(135deg, var(--emenu-fab-accent-ring-strong, rgba(0, 0, 0, 0.08)), var(--emenu-fab-accent-ring, rgba(0, 0, 0, 0.04)));
-    box-shadow: 0 4px 20px var(--emenu-fab-accent-ring, rgba(0, 0, 0, 0.06));
+    background: linear-gradient(145deg, #ff6b5a 0%, #C21807 48%, #7a0f06 100%);
+    box-shadow:
+        0 10px 28px rgba(194, 24, 7, 0.28),
+        0 2px 10px rgba(194, 24, 7, 0.22);
 }
 
 .cafe-info-logo {
@@ -5304,7 +5310,10 @@ body.emenu-layout .menu-hero-brand.hero-theme-pulse .menu-hero-logo-ring {
     height: 100%;
     border-radius: 50%;
     object-fit: contain;
-    background: #fff;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    filter: drop-shadow(0 6px 14px rgba(194, 24, 7, 0.35));
 }
 
 .cafe-info-title {

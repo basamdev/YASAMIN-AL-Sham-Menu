@@ -2,24 +2,42 @@
   "id": "./",
   "name": "YASAMIN AL-SHAM",
   "short_name": "YASAMIN",
-  "description": "YASAMIN AL-SHAM — مطعـم یاسمین الشام",
+  "description": "YASAMIN AL-SHAM — مطعم ياسمين الشام",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
-  "background_color": "#1a1a1a",
-  "theme_color": "#c41e3a",
+  "background_color": "#C21807",
+  "theme_color": "#C21807",
   "orientation": "any",
   "icons": [
     {
-      "src": "assets/yassamin-alsham-logo.png",
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
+      "src": "assets/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "assets/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
       "src": "assets/yassamin-alsham-logo.png",
-      "sizes": "192x192",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     }

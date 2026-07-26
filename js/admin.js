@@ -1387,7 +1387,9 @@ document.addEventListener('DOMContentLoaded', function () {
     hydrateAdminFromLocalCache();
 
     var LOGO_CANDIDATES = [
+        'assets/yassamin-logo-badge.png',
         'assets/yassamin-alsham-logo.png',
+        'assets/icon-512.png',
         'assets/logo.svg'
     ];
     window.fallbackLogo = function (img) {
@@ -4337,7 +4339,7 @@ function buildReceiptPrintHtml(options) {
     '</head>' +
     '<body class="' + langClass + '">' +
         '<div class="receipt">' +
-            '<img class="brand-logo" src="' + escapeReceiptHtml(options.logoUrl || 'assets/yassamin-alsham-logo.png') + '" alt="" onerror="this.style.display=\'none\'">' +
+            '<img class="brand-logo" src="' + escapeReceiptHtml(options.logoUrl || 'assets/yassamin-logo-badge.png') + '" alt="" onerror="this.style.display=\'none\'">' +
              '<div class="brand-title"><span class="en">YASAMIN AL-SHAM</span><span class="sep">|</span><span class="ku">مطعـم یاسمین الشام</span></div>' +
             '<div class="brand-tagline">Premium Coffee House</div>' +
             (options.location ? '<div class="brand-location">' + escapeReceiptHtml(options.location) + '</div>' : '') +
@@ -4459,7 +4461,7 @@ function printReceipt(itemsOverride) {
     var phone = formatReceiptPhone(localStorage.getItem('whatsappPhone') || '9647506454656');
     var location = localStorage.getItem('cafeLocationLabel') || 'بەحرکە-مجەمع';
 
-    var logoUrl = new URL('assets/yassamin-alsham-logo.png', window.location.href).href;
+    var logoUrl = new URL('assets/yassamin-logo-badge.png', window.location.href).href;
 
     var receiptHTML = buildReceiptPrintHtml({
         lang: lang,

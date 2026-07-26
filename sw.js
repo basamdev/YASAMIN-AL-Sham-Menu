@@ -1,4 +1,4 @@
-const CACHE_NAME = 'yassamin-v119';
+const CACHE_NAME = 'yassamin-v122';
 const APP_SHELL_PATHS = /\.(html|css|js)$/i;
 const FIREBASE_SDK_URLS = [
     'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js',
@@ -10,7 +10,14 @@ const FIREBASE_SDK_URLS = [
 const STATIC_ASSETS = [
     './manifest.json',
     './assets/yassamin-alsham-logo.png',
+    './assets/yassamin-logo-badge.png',
+    './assets/icon-192.png',
+    './assets/icon-512.png',
+    './assets/icon-512-maskable.png',
+    './assets/apple-touch-icon.png',
+    './assets/yassamin-logo-circle-premium.png',
     './assets/yassamin-logo-full.png',
+    './assets/yassamin-logo-red.png',
     './assets/logo.svg',
     './images/flag-kurdistan.svg',
     './images/install/ios-step-1.png?v=2',
