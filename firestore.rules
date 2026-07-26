@@ -15,6 +15,11 @@ service cloud.firestore {
       allow write: if isSignedIn();
     }
 
+    match /menuOffers/{offerId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
     match /settings/{docId} {
       allow read: if true;
       allow write: if isSignedIn();

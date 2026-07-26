@@ -1564,6 +1564,7 @@ function loadAdminSection(section) {
         if (section === 'dashboard') { loadDashboard(); }
         else if (section === 'items') { loadManageItems(); }
         else if (section === 'categories') { loadManageCategories(); }
+        else if (section === 'offers') { loadManageOffers(); }
         else if (section === 'cashier') { loadCashier(); }
         else if (section === 'expenses') { loadExpenses(); }
         else if (section === 'settings') { loadSettings(); }
@@ -4951,6 +4952,355 @@ function setupCafeTimePickers(lang) {
             });
         });
     }
+}
+
+/* ============ MENU OFFERS (hero slideshow) ============ */
+
+function readCachedOffersAdmin() {
+    try {
+        var list = JSON.parse(localStorage.getItem('cachedMenuOffers') || '[]');
+        return Array.isArray(list) ? list : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function writeCachedOffersAdmin(list) {
+    try {
+        localStorage.setItem('cachedMenuOffers', JSON.stringify(list || []));
+    } catch (e) { /* ignore */ }
+}
+
+function sortOffersAdmin(list) {
+    return (list || []).slice().sort(function (a, b) {
+        var ao = a.order != null ? Number(a.order) : 0;
+        var bo = b.order != null ? Number(b.order) : 0;
+        if (ao !== bo) return ao - bo;
+        return String(a.id || '').localeCompare(String(b.id || ''));
+    });
+}
+
+function nextOfferOrder() {
+    var max = -1;
+    readCachedOffersAdmin().forEach(function (o) {
+        var n = Number(o.order);
+        if (!isNaN(n) && n > max) max = n;
+    });
+    return max + 1;
+}
+
+function loadManageOffers() {
+    var S = i18n[localStorage.getItem('selectedLang') || 'ku'] || i18n.en;
+    var adminContent = document.getElementById('adminContent');
+    adminContent.innerHTML =
+        '<div class="card">' +
+            '<h2>' + escapeHtmlText(S.manageOffers || 'Manage Offers') + '</h2>' +
+            '<p class="settings-section-hint" style="margin-bottom:14px;">' + escapeHtmlText(S.offersHint || 'These images show at the top of the menu — each image for 3 seconds.') + '</p>' +
+            '<button class="btn-primary" id="addOfferBtn" style="margin-bottom:16px;">' + escapeHtmlText(S.addOffer || 'Add Offer') + '</button>' +
+            '<div id="offersList"><div class="loading">' + escapeHtmlText(S.loading || 'Loading...') + '</div></div>' +
+        '</div>' +
+        '<div id="offerModal" class="modal-overlay">' +
+            '<div class="modal">' +
+                '<div class="modal-content">' +
+                    '<button class="modal-close" id="offerModalClose" aria-label="Close">' +
+                        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' +
+                    '</button>' +
+                    '<h2 id="offerModalTitle">' + escapeHtmlText(S.addOffer || 'Add Offer') + '</h2>' +
+                    '<form id="offerForm">' +
+                        '<div class="form-group"><label>' + escapeHtmlText(S.offerTitle || 'Title') + '</label>' +
+                            '<input type="text" id="offerTitle" placeholder="Burger offer, Pizza, Shawarma..."></div>' +
+                        '<div class="form-group"><label>' + escapeHtmlText(S.offerImage || 'Offer image') + '</label>' +
+                            '<input type="file" accept="image/*" id="offerImageFile" style="margin-bottom:6px;">' +
+                            '<input type="text" id="offerImageURL" placeholder="' + escapeHtmlAttr(S.imageUrlOrUpload || 'Paste image URL or upload above') + '">' +
+                            '<img id="offerImagePreview" alt="" style="display:none;margin-top:8px;max-height:140px;max-width:100%;border-radius:10px;object-fit:cover;"></div>' +
+                        '<div class="form-group"><label>' + escapeHtmlText(S.offerLink || 'Offer link') + '</label>' +
+                            '<input type="url" id="offerLinkUrl" placeholder="https://..."></div>' +
+                        '<div class="form-group"><label>' + escapeHtmlText(S.offerOrder || 'Order') + '</label>' +
+                            '<input type="number" id="offerOrder" min="0" step="1" value="0"></div>' +
+                        '<div class="form-group"><label><input type="checkbox" id="offerActive" checked> ' + escapeHtmlText(S.offerActive || 'Active on menu') + '</label></div>' +
+                        '<button type="submit" class="btn-primary">' + escapeHtmlText(S.saveOffer || 'Save Offer') + '</button>' +
+                        '<button type="button" class="btn-secondary" id="cancelOfferBtn" style="margin-left:8px;">' + escapeHtmlText(S.cancel || 'Cancel') + '</button>' +
+                        '<input type="hidden" id="offerId" value="">' +
+                    '</form>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+
+    wireOfferEvents();
+    loadOffersList();
+}
+
+function renderOffersTable(offers) {
+    var S = i18n[localStorage.getItem('selectedLang') || 'ku'] || i18n.en;
+    var list = document.getElementById('offersList');
+    if (!list) return;
+    offers = sortOffersAdmin(offers || []);
+
+    if (!offers.length) {
+        list.innerHTML = '<p style="color:var(--text-muted);padding:8px 2px;">' + escapeHtmlText(S.noOffers || 'No offers yet.') + '</p>';
+        return;
+    }
+
+    var html = '<div class="table-responsive"><table class="admin-table"><thead><tr>' +
+        '<th>' + escapeHtmlText(S.image || 'Image') + '</th>' +
+        '<th>' + escapeHtmlText(S.name || 'Title') + '</th>' +
+        '<th>' + escapeHtmlText(S.offerOrder || 'Order') + '</th>' +
+        '<th>' + escapeHtmlText(S.offerActive || 'Active') + '</th>' +
+        '<th>' + escapeHtmlText(S.actions || 'Actions') + '</th>' +
+        '</tr></thead><tbody>';
+
+    offers.forEach(function (o) {
+        var img = o.image || '';
+        var title = o.title || '—';
+        var activeLabel = o.active !== false ? '✓' : '—';
+        html += '<tr>' +
+            '<td><img src="' + escapeHtmlAttr(img) + '" alt="" width="72" height="48" style="border-radius:8px;object-fit:cover;background:#eee;" onerror="this.style.opacity=.3"></td>' +
+            '<td>' + escapeHtmlText(title) + '</td>' +
+            '<td>' + escapeHtmlText(String(o.order != null ? o.order : 0)) + '</td>' +
+            '<td>' + activeLabel + '</td>' +
+            '<td>' +
+                '<button class="btn-primary btn-sm edit-offer" data-id="' + escapeHtmlAttr(o.id) + '">' + escapeHtmlText(S.edit || 'Edit') + '</button> ' +
+                '<button class="btn-danger btn-sm delete-offer" data-id="' + escapeHtmlAttr(o.id) + '">' + escapeHtmlText(S.delete || 'Delete') + '</button>' +
+            '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+    list.innerHTML = html;
+
+    list.onclick = function (e) {
+        var editBtn = e.target.closest('.edit-offer');
+        if (editBtn) {
+            editOffer(editBtn.getAttribute('data-id'));
+            return;
+        }
+        var deleteBtn = e.target.closest('.delete-offer');
+        if (deleteBtn) {
+            deleteOffer(deleteBtn.getAttribute('data-id'));
+        }
+    };
+}
+
+function loadOffersList() {
+    var listEl = document.getElementById('offersList');
+    if (!listEl) return;
+
+    var cached = readCachedOffersAdmin();
+    if (cached.length) renderOffersTable(cached);
+
+    if (!window.db) {
+        if (!cached.length) {
+            renderOffersTable([]);
+        }
+        return;
+    }
+
+    whenAdminReady(function () {
+        if (!window.db) {
+            renderOffersTable(readCachedOffersAdmin());
+            return;
+        }
+        window.db.collection('menuOffers').get().then(function (snap) {
+            var offers = [];
+            snap.forEach(function (doc) {
+                var d = doc.data() || {};
+                offers.push({
+                    id: doc.id,
+                    image: d.image || '',
+                    title: d.title || '',
+                    linkUrl: d.linkUrl || '',
+                    order: d.order != null ? Number(d.order) : 0,
+                    active: d.active !== false
+                });
+            });
+            writeCachedOffersAdmin(offers);
+            renderOffersTable(offers);
+        }).catch(function (err) {
+            console.warn('[admin offers]', err && err.message);
+            if (!readCachedOffersAdmin().length) {
+                var S = i18n[localStorage.getItem('selectedLang') || 'ku'] || i18n.en;
+                listEl.innerHTML = '<p style="color:#C62828;">' + escapeHtmlText((S.errorPrefix || 'Error:') + ' ' + (err.message || err)) + '</p>';
+            } else {
+                renderOffersTable(readCachedOffersAdmin());
+            }
+        });
+    });
+}
+
+function wireOfferEvents() {
+    var S = i18n[localStorage.getItem('selectedLang') || 'ku'] || i18n.en;
+    var addBtn = document.getElementById('addOfferBtn');
+    if (addBtn) {
+        addBtn.addEventListener('click', function () {
+            openOfferModal('', {
+                title: '',
+                image: '',
+                linkUrl: '',
+                order: nextOfferOrder(),
+                active: true
+            }, true);
+        });
+    }
+
+    var closeBtn = document.getElementById('offerModalClose');
+    var cancelBtn = document.getElementById('cancelOfferBtn');
+    function closeModal() {
+        var modal = document.getElementById('offerModal');
+        if (modal) modal.classList.remove('active');
+    }
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+    var form = document.getElementById('offerForm');
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            saveOffer();
+        });
+    }
+
+    var fileInput = document.getElementById('offerImageFile');
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            var file = fileInput.files && fileInput.files[0];
+            if (!file) return;
+            // Wider compression for hero banners (still under Firestore size limits).
+            fileToCompressedDataURL(file, 1280, 0.72).then(function (dataUrl) {
+                var target = document.getElementById('offerImageURL');
+                if (target) target.value = dataUrl;
+                var preview = document.getElementById('offerImagePreview');
+                if (preview) { preview.src = dataUrl; preview.style.display = 'block'; }
+            }).catch(function (err) {
+                alert((err && err.message) || 'Image error');
+            });
+        });
+    }
+
+    var urlInput = document.getElementById('offerImageURL');
+    if (urlInput) {
+        urlInput.addEventListener('input', function () {
+            var preview = document.getElementById('offerImagePreview');
+            if (!preview) return;
+            var val = urlInput.value.trim();
+            if (val) {
+                preview.src = val;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+    }
+}
+
+function openOfferModal(offerId, offer, isNew) {
+    var S = i18n[localStorage.getItem('selectedLang') || 'ku'] || i18n.en;
+    document.getElementById('offerForm').reset();
+    document.getElementById('offerId').value = offerId || '';
+    document.getElementById('offerTitle').value = offer.title || '';
+    document.getElementById('offerImageURL').value = offer.image || '';
+    document.getElementById('offerLinkUrl').value = offer.linkUrl || '';
+    document.getElementById('offerOrder').value = offer.order != null ? offer.order : nextOfferOrder();
+    document.getElementById('offerActive').checked = offer.active !== false;
+    var pr = document.getElementById('offerImagePreview');
+    if (offer.image) {
+        pr.src = offer.image;
+        pr.style.display = 'block';
+    } else {
+        pr.style.display = 'none';
+    }
+    document.getElementById('offerModalTitle').textContent = isNew ? (S.addOffer || 'Add Offer') : (S.editOffer || 'Edit Offer');
+    document.getElementById('offerModal').classList.add('active');
+}
+
+function editOffer(offerId) {
+    var cached = readCachedOffersAdmin().find(function (o) { return o.id === offerId; });
+    if (cached) {
+        openOfferModal(offerId, cached, false);
+        return;
+    }
+    if (!window.db) return;
+    window.db.collection('menuOffers').doc(offerId).get().then(function (doc) {
+        if (!doc.exists) return;
+        var d = doc.data() || {};
+        openOfferModal(offerId, {
+            title: d.title || '',
+            image: d.image || '',
+            linkUrl: d.linkUrl || '',
+            order: d.order != null ? Number(d.order) : 0,
+            active: d.active !== false
+        }, false);
+    });
+}
+
+function saveOffer() {
+    var S = i18n[localStorage.getItem('selectedLang') || 'ku'] || i18n.en;
+    var image = (document.getElementById('offerImageURL').value || '').trim();
+    if (!image) {
+        alert((S.offerImage || 'Offer image') + ' — required');
+        return;
+    }
+    if (!window.db) {
+        alert(S.itemSyncFailed + '\nFirebase not ready.');
+        return;
+    }
+    if (!isAdminAuthenticated()) {
+        alert(S.itemSyncFailed + '\nPlease log in again.');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    var offerId = (document.getElementById('offerId').value || '').trim();
+    var isCreate = !offerId;
+    var title = (document.getElementById('offerTitle').value || '').trim();
+    var linkUrl = (document.getElementById('offerLinkUrl').value || '').trim();
+    var orderVal = parseInt(document.getElementById('offerOrder').value, 10);
+    if (isNaN(orderVal)) orderVal = nextOfferOrder();
+    var active = !!document.getElementById('offerActive').checked;
+
+    var plainData = {
+        image: image,
+        title: title,
+        linkUrl: linkUrl,
+        order: orderVal,
+        active: active,
+        updated_at: new Date().toISOString()
+    };
+
+    var ref = isCreate ? window.db.collection('menuOffers').doc() : window.db.collection('menuOffers').doc(offerId);
+    var savedId = ref.id;
+    var writeData = Object.assign({}, plainData, {
+        updated_at: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    if (isCreate) {
+        writeData.created_at = firebase.firestore.FieldValue.serverTimestamp();
+        plainData.created_at = plainData.updated_at;
+    }
+
+    ref.set(writeData, { merge: true }).then(function () {
+        var list = readCachedOffersAdmin().filter(function (o) { return o.id !== savedId; });
+        list.push(Object.assign({ id: savedId }, plainData));
+        writeCachedOffersAdmin(list);
+        document.getElementById('offerModal').classList.remove('active');
+        renderOffersTable(list);
+        alert(S.offerSavedCloud || S.settingsSaved || 'Saved');
+    }).catch(function (err) {
+        alert((S.itemSyncFailed || 'Save failed') + (err && err.message ? '\n' + err.message : ''));
+    });
+}
+
+function deleteOffer(offerId) {
+    var S = i18n[localStorage.getItem('selectedLang') || 'ku'] || i18n.en;
+    if (!confirm(S.deleteOfferConfirm || 'Delete this offer?')) return;
+    if (!window.db) {
+        alert(S.itemSyncFailed + '\nFirebase not ready.');
+        return;
+    }
+    window.db.collection('menuOffers').doc(offerId).delete().then(function () {
+        var list = readCachedOffersAdmin().filter(function (o) { return o.id !== offerId; });
+        writeCachedOffersAdmin(list);
+        renderOffersTable(list);
+        alert(S.offerDeleted || 'Deleted');
+    }).catch(function (err) {
+        alert((S.itemSyncFailed || 'Delete failed') + (err && err.message ? '\n' + err.message : ''));
+    });
 }
 
 function loadSettings() {

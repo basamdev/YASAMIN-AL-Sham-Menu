@@ -107,6 +107,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 updateCafeInfoPanel();
                 subscribeCafeSettingsUpdates();
             });
+            initMenuOffersSlideshow();
             loadMenuItems();
             setupLanguageButtons();
             initHeroTitleSequence();
@@ -178,6 +179,20 @@ const i18n = {
         dashboard: 'داشبۆرد',
         manageItems: 'بەڕێوەبردنی ئایتمەکان',
         manageCategories: 'بەڕێوەبردنی بەشەکان',
+        manageOffers: 'بەڕێوەبردنی ئۆفەرەکان',
+        addOffer: 'زیادکردنی ئۆفەر',
+        editOffer: 'دەستکاری ئۆفەر',
+        saveOffer: 'پاشەکەوتکردنی ئۆفەر',
+        offerImage: 'وێنەی ئۆفەر',
+        offerTitle: 'ناونیشانی ئۆفەر (ئارەزوومەندانە)',
+        offerLink: 'بەستەری ئۆفەر (ئارەزوومەندانە)',
+        offerActive: 'چالاک لە مێنوو',
+        offerOrder: 'ڕیزبەندی',
+        noOffers: 'هیچ ئۆفەرێک نییە. وێنەی ئۆفەر زیاد بکە.',
+        offerSavedCloud: 'ئۆفەر پاشەکەوت کرا.',
+        offerDeleted: 'ئۆفەر سڕایەوە.',
+        deleteOfferConfirm: 'دڵنیایت لە سڕینەوەی ئەم ئۆفەرە؟',
+        offersHint: 'ئەم وێنانە لە سەرەوەی مێنوو دەردەکەون — هەر وێنەیەک ٣ چرکە.',
         reports: 'ڕاپۆرتەکان',
         cashier: 'کاشێر',
         settings: 'ڕێکخستنەکان',
@@ -406,6 +421,20 @@ const i18n = {
         dashboard: 'لوحة التحكم',
         manageItems: 'إدارة العناصر',
         manageCategories: 'إدارة الفئات',
+        manageOffers: 'إدارة العروض',
+        addOffer: 'إضافة عرض',
+        editOffer: 'تعديل العرض',
+        saveOffer: 'حفظ العرض',
+        offerImage: 'صورة العرض',
+        offerTitle: 'عنوان العرض (اختياري)',
+        offerLink: 'رابط العرض (اختياري)',
+        offerActive: 'نشط في القائمة',
+        offerOrder: 'الترتيب',
+        noOffers: 'لا توجد عروض. أضف صور العروض.',
+        offerSavedCloud: 'تم حفظ العرض.',
+        offerDeleted: 'تم حذف العرض.',
+        deleteOfferConfirm: 'هل أنت متأكد من حذف هذا العرض؟',
+        offersHint: 'تظهر هذه الصور أعلى القائمة — كل صورة لمدة ٣ ثوانٍ.',
         reports: 'التقارير',
         cashier: 'الصندوق',
         settings: 'الإعدادات',
@@ -634,6 +663,20 @@ const i18n = {
         dashboard: 'Dashboard',
         manageItems: 'Manage Items',
         manageCategories: 'Manage Categories',
+        manageOffers: 'Manage Offers',
+        addOffer: 'Add Offer',
+        editOffer: 'Edit Offer',
+        saveOffer: 'Save Offer',
+        offerImage: 'Offer image',
+        offerTitle: 'Offer title (optional)',
+        offerLink: 'Offer link (optional)',
+        offerActive: 'Active on menu',
+        offerOrder: 'Order',
+        noOffers: 'No offers yet. Add offer images.',
+        offerSavedCloud: 'Offer saved.',
+        offerDeleted: 'Offer deleted.',
+        deleteOfferConfirm: 'Delete this offer image?',
+        offersHint: 'These images show at the top of the menu — each image for 3 seconds.',
         reports: 'Reports',
         cashier: 'Cashier',
         settings: 'Settings',
@@ -3277,6 +3320,245 @@ function sendWhatsAppOrder() {
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
 }
+
+/* ========================================
+   Menu hero offers slideshow (replaces video)
+   ======================================== */
+
+var MENU_OFFERS_CACHE_KEY = 'cachedMenuOffers';
+var MENU_OFFER_INTERVAL_MS = 3000;
+var _menuOffersTimer = null;
+var _menuOffersUnsub = null;
+var _menuOffersIndex = 0;
+var _menuOffersList = [];
+
+function readCachedMenuOffers() {
+    try {
+        var list = JSON.parse(localStorage.getItem(MENU_OFFERS_CACHE_KEY) || '[]');
+        return Array.isArray(list) ? list : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function writeCachedMenuOffers(list) {
+    try {
+        localStorage.setItem(MENU_OFFERS_CACHE_KEY, JSON.stringify(list || []));
+    } catch (e) { /* ignore quota */ }
+}
+
+function normalizeMenuOffer(doc) {
+    if (!doc) return null;
+    var data = doc.data && typeof doc.data === 'function' ? doc.data() : (doc.data || doc);
+    var id = doc.id || data.id || '';
+    var image = (data.image || '').trim();
+    if (!image) return null;
+    return {
+        id: id,
+        image: image,
+        title: (data.title || '').trim(),
+        linkUrl: (data.linkUrl || '').trim(),
+        order: data.order != null ? Number(data.order) : 0,
+        active: data.active !== false
+    };
+}
+
+function sortMenuOffers(list) {
+    return (list || []).slice().sort(function (a, b) {
+        var ao = a.order != null ? Number(a.order) : 0;
+        var bo = b.order != null ? Number(b.order) : 0;
+        if (ao !== bo) return ao - bo;
+        return String(a.id || '').localeCompare(String(b.id || ''));
+    });
+}
+
+function getActiveMenuOffers(list) {
+    return sortMenuOffers(list).filter(function (o) {
+        return o && o.active !== false && o.image;
+    });
+}
+
+function renderMenuOffersSlideshow(offers) {
+    var track = document.getElementById('menuHeroOffersTrack');
+    var dots = document.getElementById('menuHeroOffersDots');
+    if (!track) return;
+
+    _menuOffersList = getActiveMenuOffers(offers);
+    _menuOffersIndex = 0;
+
+    if (_menuOffersTimer) {
+        clearInterval(_menuOffersTimer);
+        _menuOffersTimer = null;
+    }
+
+    if (!_menuOffersList.length) {
+        track.innerHTML =
+            '<div class="menu-hero-offer-slide is-active menu-hero-offer-fallback" data-offer-index="0" aria-hidden="false">' +
+                '<div class="menu-hero-offer-fallback-bg"></div>' +
+            '</div>';
+        if (dots) {
+            dots.innerHTML = '';
+            dots.hidden = true;
+        }
+        return;
+    }
+
+    var slidesHtml = _menuOffersList.map(function (offer, index) {
+        var linkAttr = offer.linkUrl
+            ? ' data-link="' + String(offer.linkUrl).replace(/"/g, '&quot;') + '" role="link" tabindex="0"'
+            : '';
+        var clickable = offer.linkUrl ? ' is-clickable' : '';
+        return '<div class="menu-hero-offer-slide' + (index === 0 ? ' is-active' : '') + clickable +
+            '" data-offer-index="' + index + '"' + linkAttr + ' aria-hidden="' + (index === 0 ? 'false' : 'true') + '">' +
+            '<img src="' + String(offer.image).replace(/"/g, '&quot;') + '" alt="' +
+            String(offer.title || 'Offer').replace(/"/g, '&quot;') + '" class="menu-hero-offer-img" loading="' +
+            (index === 0 ? 'eager' : 'lazy') + '">' +
+            '</div>';
+    }).join('');
+    track.innerHTML = slidesHtml;
+
+    if (dots) {
+        if (_menuOffersList.length > 1) {
+            dots.hidden = false;
+            dots.innerHTML = _menuOffersList.map(function (_, index) {
+                return '<button type="button" class="menu-hero-offer-dot' + (index === 0 ? ' is-active' : '') +
+                    '" data-offer-dot="' + index + '" aria-label="Offer ' + (index + 1) + '"></button>';
+            }).join('');
+            dots.onclick = function (e) {
+                var btn = e.target.closest('[data-offer-dot]');
+                if (!btn) return;
+                showMenuOfferSlide(parseInt(btn.getAttribute('data-offer-dot'), 10) || 0, true);
+            };
+        } else {
+            dots.innerHTML = '';
+            dots.hidden = true;
+        }
+    }
+
+    track.onclick = function (e) {
+        var slide = e.target.closest('.menu-hero-offer-slide.is-clickable');
+        if (!slide) return;
+        var url = slide.getAttribute('data-link');
+        if (url) window.open(url, '_blank', 'noopener');
+    };
+
+    if (_menuOffersList.length > 1) {
+        _menuOffersTimer = setInterval(function () {
+            if (document.hidden) return;
+            showMenuOfferSlide(_menuOffersIndex + 1, false);
+        }, MENU_OFFER_INTERVAL_MS);
+    }
+}
+
+function showMenuOfferSlide(index, resetTimer) {
+    if (!_menuOffersList.length) return;
+    var track = document.getElementById('menuHeroOffersTrack');
+    var dots = document.getElementById('menuHeroOffersDots');
+    if (!track) return;
+
+    var total = _menuOffersList.length;
+    _menuOffersIndex = ((index % total) + total) % total;
+
+    track.querySelectorAll('.menu-hero-offer-slide').forEach(function (slide) {
+        var i = parseInt(slide.getAttribute('data-offer-index'), 10);
+        var active = i === _menuOffersIndex;
+        slide.classList.toggle('is-active', active);
+        slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+    });
+    if (dots) {
+        dots.querySelectorAll('.menu-hero-offer-dot').forEach(function (dot) {
+            var i = parseInt(dot.getAttribute('data-offer-dot'), 10);
+            dot.classList.toggle('is-active', i === _menuOffersIndex);
+        });
+    }
+
+    if (resetTimer && _menuOffersList.length > 1) {
+        if (_menuOffersTimer) clearInterval(_menuOffersTimer);
+        _menuOffersTimer = setInterval(function () {
+            if (document.hidden) return;
+            showMenuOfferSlide(_menuOffersIndex + 1, false);
+        }, MENU_OFFER_INTERVAL_MS);
+    }
+}
+
+function initMenuOffersSlideshow() {
+    if (!document.getElementById('menuHeroOffersTrack')) return;
+
+    renderMenuOffersSlideshow(readCachedMenuOffers());
+
+    function applySnap(snap) {
+        var list = [];
+        snap.forEach(function (doc) {
+            var offer = normalizeMenuOffer(doc);
+            if (offer) list.push(offer);
+        });
+        writeCachedMenuOffers(list);
+        renderMenuOffersSlideshow(list);
+    }
+
+    function loadViaRest() {
+        if (typeof fetchPublicCollectionViaRest !== 'function' && typeof window.fetchPublicCollectionViaRest !== 'function') {
+            // Admin helper may not exist on menu page — use inline REST.
+            var cfg = window.firebaseConfig;
+            if (!cfg || !cfg.projectId || !cfg.apiKey) return;
+            var url = 'https://firestore.googleapis.com/v1/projects/' + encodeURIComponent(cfg.projectId) +
+                '/databases/(default)/documents/menuOffers?pageSize=100&key=' + encodeURIComponent(cfg.apiKey);
+            fetch(url, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+                .then(function (json) {
+                    var list = [];
+                    (json.documents || []).forEach(function (doc) {
+                        var parts = (doc.name || '').split('/');
+                        var id = parts[parts.length - 1];
+                        var fields = doc.fields || {};
+                        var data = {};
+                        Object.keys(fields).forEach(function (k) {
+                            var f = fields[k];
+                            if (!f) return;
+                            if ('stringValue' in f) data[k] = f.stringValue;
+                            else if ('integerValue' in f) data[k] = parseInt(f.integerValue, 10);
+                            else if ('doubleValue' in f) data[k] = f.doubleValue;
+                            else if ('booleanValue' in f) data[k] = f.booleanValue;
+                        });
+                        var offer = normalizeMenuOffer({ id: id, data: data });
+                        if (offer) list.push(offer);
+                    });
+                    writeCachedMenuOffers(list);
+                    renderMenuOffersSlideshow(list);
+                }).catch(function () { /* keep cache/fallback */ });
+            return;
+        }
+    }
+
+    var start = function () {
+        if (!window.db) {
+            loadViaRest();
+            return;
+        }
+        if (_menuOffersUnsub) {
+            try { _menuOffersUnsub(); } catch (e) { /* ignore */ }
+            _menuOffersUnsub = null;
+        }
+        var safety = setTimeout(function () {
+            if (!_menuOffersList.length) loadViaRest();
+        }, 5000);
+        _menuOffersUnsub = window.db.collection('menuOffers').onSnapshot(function (snap) {
+            clearTimeout(safety);
+            applySnap(snap);
+        }, function (err) {
+            clearTimeout(safety);
+            console.warn('[offers] listener:', err && err.message);
+            loadViaRest();
+        });
+    };
+
+    if (window.dbReady) {
+        Promise.resolve(window.dbReady).then(start).catch(start);
+    } else {
+        start();
+    }
+}
+
+window.initMenuOffersSlideshow = initMenuOffersSlideshow;
 
 /* ========================================
    Cafe Info Panel
