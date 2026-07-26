@@ -5157,8 +5157,8 @@ body.emenu-layout .menu-hero-brand {
     position: absolute;
     inset: unset;
     top: calc(env(safe-area-inset-top, 0px) + 12px);
-    right: 16px;
-    left: auto;
+    left: 16px;
+    right: auto;
     bottom: auto;
     width: max-content;
     max-width: calc(100% - 32px);
@@ -5167,19 +5167,19 @@ body.emenu-layout .menu-hero-brand {
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
-    direction: rtl;
+    direction: ltr;
     unicode-bidi: isolate;
     gap: 10px;
     z-index: 3;
     padding: 0;
-    animation: heroBrandEnterRight 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: heroBrandEnterLeft 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 html[dir="ltr"] body.emenu-layout .menu-hero-brand,
 html[dir="rtl"] body.emenu-layout .menu-hero-brand {
-    right: 16px;
-    left: auto;
-    direction: rtl;
+    left: 16px;
+    right: auto;
+    direction: ltr;
 }
 
 body.emenu-layout .menu-hero-logo-wrap {
@@ -5223,13 +5223,17 @@ body.emenu-layout .menu-hero-title {
 body.emenu-layout .menu-hero-typewriter {
     display: inline-block;
     min-width: 6.8rem;
-    text-align: right;
+    text-align: left;
     font-family: var(--font-arabic);
     font-size: clamp(0.9rem, 3.6vw, 1.1rem);
     font-weight: 600;
     letter-spacing: 0;
     white-space: nowrap;
     color: #ffffff;
+}
+
+body.emenu-layout .menu-hero-typewriter[dir="rtl"] {
+    text-align: left;
 }
 
 body.emenu-layout .menu-hero-typewriter[dir="ltr"] {
@@ -5292,6 +5296,17 @@ body.emenu-layout .menu-hero-brand.hero-theme-pulse .menu-hero-logo-ring {
     }
 }
 
+@keyframes heroBrandEnterLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
 @keyframes heroRingPulse {
     0%, 100% {
         transform: scale(1);
@@ -5306,7 +5321,8 @@ body.emenu-layout .menu-hero-brand.hero-theme-pulse .menu-hero-logo-ring {
 @media (max-width: 380px) {
     body.emenu-layout .menu-hero-brand {
         top: calc(env(safe-area-inset-top, 0px) + 10px);
-        right: 12px;
+        left: 12px;
+        right: auto;
         gap: 8px;
     }
 
