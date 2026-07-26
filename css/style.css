@@ -671,8 +671,8 @@ body.index-page .hero .logo:hover {
 }
 
 body.index-page .logo-splash img {
-    width: clamp(140px, 34vw, 190px);
-    height: clamp(140px, 34vw, 190px);
+    width: clamp(120px, 30vw, 165px);
+    height: clamp(120px, 30vw, 165px);
     max-width: none;
     border-radius: 50%;
     object-fit: contain;
