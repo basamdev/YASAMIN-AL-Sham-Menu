@@ -5162,8 +5162,8 @@ function wireOfferEvents() {
         fileInput.addEventListener('change', function () {
             var file = fileInput.files && fileInput.files[0];
             if (!file) return;
-            // Wider compression for hero banners (still under Firestore size limits).
-            fileToCompressedDataURL(file, 1280, 0.72).then(function (dataUrl) {
+            // Higher quality — offer posters have baked-in price/text that must stay sharp.
+            fileToCompressedDataURL(file, 1600, 0.88).then(function (dataUrl) {
                 var target = document.getElementById('offerImageURL');
                 if (target) target.value = dataUrl;
                 var preview = document.getElementById('offerImagePreview');

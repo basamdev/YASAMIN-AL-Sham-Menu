@@ -3381,6 +3381,7 @@ function getActiveMenuOffers(list) {
 function renderMenuOffersSlideshow(offers) {
     var track = document.getElementById('menuHeroOffersTrack');
     var dots = document.getElementById('menuHeroOffersDots');
+    var hero = document.querySelector('.menu-hero');
     if (!track) return;
 
     _menuOffersList = getActiveMenuOffers(offers);
@@ -3392,6 +3393,7 @@ function renderMenuOffersSlideshow(offers) {
     }
 
     if (!_menuOffersList.length) {
+        if (hero) hero.classList.remove('has-offers');
         track.innerHTML =
             '<div class="menu-hero-offer-slide is-active menu-hero-offer-fallback" data-offer-index="0" aria-hidden="false">' +
                 '<div class="menu-hero-offer-fallback-bg"></div>' +
@@ -3402,6 +3404,8 @@ function renderMenuOffersSlideshow(offers) {
         }
         return;
     }
+
+    if (hero) hero.classList.add('has-offers');
 
     var slidesHtml = _menuOffersList.map(function (offer, index) {
         var linkAttr = offer.linkUrl
