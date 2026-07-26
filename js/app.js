@@ -3331,6 +3331,8 @@ var _menuOffersTimer = null;
 var _menuOffersUnsub = null;
 var _menuOffersIndex = 0;
 var _menuOffersList = [];
+var _menuOffersSwipeBound = false;
+var _menuOffersSuppressClick = false;
 
 function readCachedMenuOffers() {
     try {
@@ -3440,18 +3442,103 @@ function renderMenuOffersSlideshow(offers) {
     }
 
     track.onclick = function (e) {
+        if (_menuOffersSuppressClick) {
+            _menuOffersSuppressClick = false;
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
         var slide = e.target.closest('.menu-hero-offer-slide.is-clickable');
         if (!slide) return;
         var url = slide.getAttribute('data-link');
         if (url) window.open(url, '_blank', 'noopener');
     };
 
+    wireMenuOffersSwipe();
+    restartMenuOffersTimer();
+}
+
+function restartMenuOffersTimer() {
+    if (_menuOffersTimer) {
+        clearInterval(_menuOffersTimer);
+        _menuOffersTimer = null;
+    }
     if (_menuOffersList.length > 1) {
         _menuOffersTimer = setInterval(function () {
             if (document.hidden) return;
             showMenuOfferSlide(_menuOffersIndex + 1, false);
         }, MENU_OFFER_INTERVAL_MS);
     }
+}
+
+function wireMenuOffersSwipe() {
+    var root = document.getElementById('menuHeroOffers');
+    if (!root || _menuOffersSwipeBound) return;
+    _menuOffersSwipeBound = true;
+
+    var startX = 0;
+    var startY = 0;
+    var startTime = 0;
+    var dragging = false;
+    var swiped = false;
+
+    function point(e) {
+        if (e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        if (e.changedTouches && e.changedTouches[0]) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+        return { x: e.clientX, y: e.clientY };
+    }
+
+    function onStart(e) {
+        if (_menuOffersList.length < 2) return;
+        // Ignore swipe that starts on a dot button
+        if (e.target && e.target.closest && e.target.closest('.menu-hero-offer-dot')) return;
+        var p = point(e);
+        startX = p.x;
+        startY = p.y;
+        startTime = Date.now();
+        dragging = true;
+        swiped = false;
+    }
+
+    function onMove(e) {
+        if (!dragging) return;
+        var p = point(e);
+        var dx = p.x - startX;
+        var dy = p.y - startY;
+        // Lock to horizontal swipe once clearly sideways
+        if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.15) {
+            if (e.cancelable) e.preventDefault();
+        }
+    }
+
+    function onEnd(e) {
+        if (!dragging) return;
+        dragging = false;
+        if (_menuOffersList.length < 2) return;
+        var p = point(e);
+        var dx = p.x - startX;
+        var dy = p.y - startY;
+        var dt = Date.now() - startTime;
+        var absX = Math.abs(dx);
+        var absY = Math.abs(dy);
+        // Swipe threshold: distance or quick flick
+        if (absX > 40 && absX > absY * 1.1 && dt < 800) {
+            swiped = true;
+            _menuOffersSuppressClick = true;
+            // RTL-friendly: swipe left = next, swipe right = previous (natural page feel)
+            if (dx < 0) showMenuOfferSlide(_menuOffersIndex + 1, true);
+            else showMenuOfferSlide(_menuOffersIndex - 1, true);
+            setTimeout(function () { _menuOffersSuppressClick = false; }, 280);
+        }
+    }
+
+    root.addEventListener('touchstart', onStart, { passive: true });
+    root.addEventListener('touchmove', onMove, { passive: false });
+    root.addEventListener('touchend', onEnd, { passive: true });
+    root.addEventListener('mousedown', onStart);
+    root.addEventListener('mousemove', onMove);
+    root.addEventListener('mouseup', onEnd);
+    root.addEventListener('mouseleave', function () { dragging = false; });
 }
 
 function showMenuOfferSlide(index, resetTimer) {
@@ -3476,13 +3563,7 @@ function showMenuOfferSlide(index, resetTimer) {
         });
     }
 
-    if (resetTimer && _menuOffersList.length > 1) {
-        if (_menuOffersTimer) clearInterval(_menuOffersTimer);
-        _menuOffersTimer = setInterval(function () {
-            if (document.hidden) return;
-            showMenuOfferSlide(_menuOffersIndex + 1, false);
-        }, MENU_OFFER_INTERVAL_MS);
-    }
+    if (resetTimer) restartMenuOffersTimer();
 }
 
 function initMenuOffersSlideshow() {

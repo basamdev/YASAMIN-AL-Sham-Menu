@@ -3719,6 +3719,14 @@ body.emenu-layout .menu-header {
     z-index: 0;
     overflow: hidden;
     background: #2a1a0e;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: grab;
+}
+
+.menu-hero-offers:active {
+    cursor: grabbing;
 }
 
 .menu-hero-offers-track {
@@ -3802,26 +3810,6 @@ body.emenu-layout .menu-header {
 /* Don't darken offer posters — baked-in price/text must stay clear */
 .menu-hero.has-offers .menu-hero-shade {
     background: linear-gradient(to bottom, rgba(0,0,0,0.02) 60%, rgba(0,0,0,0.12) 100%);
-}
-
-/* Move logo away from top-right where offer prices/names usually sit */
-.menu-hero.has-offers .menu-hero-brand {
-    top: calc(env(safe-area-inset-top, 0px) + 8px);
-    right: auto;
-    left: 10px;
-    direction: ltr;
-    gap: 6px;
-    max-width: 42%;
-}
-
-.menu-hero.has-offers .menu-hero-logo {
-    width: clamp(44px, 10vw, 58px);
-    height: clamp(44px, 10vw, 58px);
-    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
-}
-
-.menu-hero.has-offers .menu-hero-title {
-    display: none;
 }
 
 .menu-hero-brand {
@@ -4584,13 +4572,6 @@ body.emenu-layout .menu-hero-offer-img {
 
 body.emenu-layout .menu-hero-offers-dots {
     bottom: 40px;
-}
-
-html[dir="rtl"] body.emenu-layout .menu-hero.has-offers .menu-hero-brand,
-html[dir="ltr"] body.emenu-layout .menu-hero.has-offers .menu-hero-brand {
-    right: auto;
-    left: 10px;
-    direction: ltr;
 }
 
 body.emenu-layout .menu-hero-shade {
